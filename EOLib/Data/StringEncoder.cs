@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace EOLib.Data;
 
 /// <summary>
@@ -5,7 +7,12 @@ namespace EOLib.Data;
 /// </summary>
 public static class StringEncoder
 {
-    public const string Encoding = "windows-1252";
+    static StringEncoder()
+    {
+        Encoding = CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? throw new InvalidOperationException("Unable to load Windows-1252 code page.");
+    }
+
+    public static Encoding Encoding { get; }
 
     /// <summary>
     /// Encodes a string by inverting the bytes and then reversing them.

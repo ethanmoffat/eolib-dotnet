@@ -208,7 +208,7 @@ public sealed class EoReader
     public string GetString()
     {
         byte[] bytes = ReadBytes(Remaining);
-        return Encoding.GetEncoding(StringEncoder.Encoding).GetString(bytes);
+        return StringEncoder.Encoding.GetString(bytes);
     }
 
     /// <summary>
@@ -242,7 +242,7 @@ public sealed class EoReader
             bytes = RemovePadding(bytes);
         }
 
-        return Encoding.GetEncoding(StringEncoder.Encoding).GetString(bytes);
+        return StringEncoder.Encoding.GetString(bytes);
     }
 
     /// <summary>
@@ -252,7 +252,7 @@ public sealed class EoReader
     {
         byte[] bytes = ReadBytes(Remaining);
         StringEncoder.DecodeString(bytes);
-        return Encoding.GetEncoding(StringEncoder.Encoding).GetString(bytes);
+        return StringEncoder.Encoding.GetString(bytes);
     }
 
     /// <summary>
@@ -286,7 +286,7 @@ public sealed class EoReader
         {
             bytes = RemovePadding(bytes);
         }
-        return Encoding.GetEncoding(StringEncoder.Encoding).GetString(bytes);
+        return StringEncoder.Encoding.GetString(bytes);
     }
 
     /// <summary>

@@ -106,7 +106,7 @@ public sealed class EoWriter
     /// <param name="str">The string to be added</param>
     public void AddString(string str)
     {
-        byte[] bytes = Encoding.GetEncoding(StringEncoder.Encoding).GetBytes(str);
+        byte[] bytes = StringEncoder.Encoding.GetBytes(str);
         SanitizeString(bytes);
         AddBytes(bytes);
     }
@@ -132,7 +132,7 @@ public sealed class EoWriter
     public void AddFixedString(string str, int length, bool padded)
     {
         CheckStringLength(str, length, padded);
-        byte[] bytes = Encoding.GetEncoding(StringEncoder.Encoding).GetBytes(str);
+        byte[] bytes = StringEncoder.Encoding.GetBytes(str);
         SanitizeString(bytes);
         if (padded)
         {
@@ -147,7 +147,7 @@ public sealed class EoWriter
     /// <param name="str">The string to be encoded and added</param>
     public void AddEncodedString(string str)
     {
-        byte[] bytes = Encoding.GetEncoding(StringEncoder.Encoding).GetBytes(str);
+        byte[] bytes = StringEncoder.Encoding.GetBytes(str);
         SanitizeString(bytes);
         StringEncoder.EncodeString(bytes);
         AddBytes(bytes);
@@ -174,7 +174,7 @@ public sealed class EoWriter
     public void AddFixedEncodedString(string str, int length, bool padded)
     {
         CheckStringLength(str, length, padded);
-        byte[] bytes = Encoding.GetEncoding(StringEncoder.Encoding).GetBytes(str);
+        byte[] bytes = StringEncoder.Encoding.GetBytes(str);
         SanitizeString(bytes);
         if (padded)
         {
