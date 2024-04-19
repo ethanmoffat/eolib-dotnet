@@ -250,9 +250,9 @@ public sealed class EoWriter
         return result;
     }
 
-    private static void CheckNumberSize(int number, int max)
+    private static void CheckNumberSize(int number, uint max)
     {
-        if ((uint)number > (uint)max)
+        if ((uint)number > max)
         {
             throw new ArgumentException($"Value {number} exceeds maximum of {max}.");
         }

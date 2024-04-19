@@ -52,7 +52,7 @@ public class PingSequenceStart : ISequenceStart
     {
         int value = random.Next(1757);
 
-        int seq1 = value + random.Next(EoNumericLimits.CHAR_MAX - 1);
+        int seq1 = value + random.Next((int)EoNumericLimits.CHAR_MAX - 1);
         int seq2 = seq1 - value;
 
         return new PingSequenceStart(value, seq1, seq2);

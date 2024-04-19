@@ -12,29 +12,31 @@ public static class NumberEncoder
     /// <returns>The encoded sequence of bytes.</returns>
     public static byte[] EncodeNumber(int number)
     {
-        int value = number;
-        int d = 0xFE;
-        if (number.CompareTo(EoNumericLimits.THREE_MAX) >= 0)
+        var value = (uint)number;
+        var original = value;
+
+        uint d = 0xFE;
+        if (original >= EoNumericLimits.THREE_MAX)
         {
             d = value / EoNumericLimits.THREE_MAX + 1;
             value %= EoNumericLimits.THREE_MAX;
         }
 
-        int c = 0xFE;
-        if (number.CompareTo(EoNumericLimits.SHORT_MAX) >= 0)
+        uint c = 0xFE;
+        if (original >= EoNumericLimits.SHORT_MAX)
         {
             c = value / EoNumericLimits.SHORT_MAX + 1;
             value %= EoNumericLimits.SHORT_MAX;
         }
 
-        int b = 0xFE;
-        if (number.CompareTo(EoNumericLimits.CHAR_MAX) >= 0)
+        uint b = 0xFE;
+        if (original >= EoNumericLimits.CHAR_MAX)
         {
             b = value / EoNumericLimits.CHAR_MAX + 1;
             value %= EoNumericLimits.CHAR_MAX;
         }
 
-        int a = value + 1;
+        uint a = value + 1;
 
         return new byte[] { (byte)a, (byte)b, (byte)c, (byte)d };
     }
@@ -66,13 +68,13 @@ public static class NumberEncoder
                     result += value;
                     break;
                 case 1:
-                    result += EoNumericLimits.CHAR_MAX * value;
+                    result += (int)EoNumericLimits.CHAR_MAX * value;
                     break;
                 case 2:
-                    result += EoNumericLimits.SHORT_MAX * value;
+                    result += (int)EoNumericLimits.SHORT_MAX * value;
                     break;
                 case 3:
-                    result += EoNumericLimits.THREE_MAX * value;
+                    result += (int)EoNumericLimits.THREE_MAX * value;
                     break;
             }
         }
