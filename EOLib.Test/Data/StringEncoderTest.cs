@@ -19,20 +19,16 @@ public class StringEncoderTest
     public void TestEncodeString(string input, string expected)
     {
         var bytes = ToBytes(input);
-        StringEncoder.EncodeString(bytes);
-
-        var encoded = FromBytes(bytes);
-        Assert.That(encoded, Is.EqualTo(expected));
+        var encoded = StringEncoder.EncodeString(bytes);
+        Assert.That(FromBytes(encoded), Is.EqualTo(expected));
     }
 
     [TestCaseSource(nameof(TestArgs))]
     public void TestDecodeString(string expected, string input)
     {
         var bytes = ToBytes(input);
-        StringEncoder.DecodeString(bytes);
-
-        var decoded = FromBytes(bytes);
-        Assert.That(decoded, Is.EqualTo(expected));
+        var decoded = StringEncoder.DecodeString(bytes);
+        Assert.That(FromBytes(decoded), Is.EqualTo(expected));
     }
 
     private static byte[] ToBytes(string str)

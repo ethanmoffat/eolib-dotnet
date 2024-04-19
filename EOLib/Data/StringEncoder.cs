@@ -17,36 +17,33 @@ public static class StringEncoder
     /// <summary>
     /// Encodes a string by inverting the bytes and then reversing them.
     /// </summary>
-    /// <remarks>
-    /// This operation mutates the input array.
-    /// </remarks>
     /// <param name="bytes">The byte array to encode.</param>
-    public static void EncodeString(byte[] bytes)
+    /// <returns>The encoded string</returns>
+    public static byte[] EncodeString(byte[] bytes)
     {
-        InvertCharacters(bytes);
-        ReverseCharacters(bytes);
+        return ReverseCharacters(InvertCharacters(bytes));
     }
 
     /// <summary>
     /// Decodes a string by reversing the bytes and then inverting them.
     /// </summary>
-    /// <remarks>
-    /// This operation mutates the input array.
-    /// </remarks>
     /// <param name="bytes">The byte array to decode.</param>
-    public static void DecodeString(byte[] bytes)
+    /// <returns>The decoded string</returns>
+    public static byte[] DecodeString(byte[] bytes)
     {
-        ReverseCharacters(bytes);
-        InvertCharacters(bytes);
+        return InvertCharacters(ReverseCharacters(bytes));
     }
 
-    private static void InvertCharacters(byte[] bytes)
+    private static byte[] InvertCharacters(byte[] bytes)
     {
-        bool flippy = (bytes.Length % 2 == 1);
+        var output = new byte[bytes.Length];
+        Array.Copy(bytes, output, bytes.Length);
 
-        for (int i = 0; i < bytes.Length; ++i)
+        bool flippy = output.Length % 2 == 1;
+
+        for (int i = 0; i < output.Length; ++i)
         {
-            byte c = bytes[i];
+            byte c = output[i];
             int f = 0;
 
             if (flippy)
@@ -60,20 +57,27 @@ public static class StringEncoder
 
             if (c >= 0x22 && c <= 0x7E)
             {
-                bytes[i] = (byte)(0x9F - c - f);
+                output[i] = (byte)(0x9F - c - f);
             }
 
             flippy = !flippy;
         }
+
+        return output;
     }
 
-    private static void ReverseCharacters(byte[] bytes)
+    private static byte[] ReverseCharacters(byte[] bytes)
     {
-        for (int i = 0; i < bytes.Length / 2; i++)
+        var output = new byte[bytes.Length];
+        Array.Copy(bytes, output, bytes.Length);
+
+        for (int i = 0; i < output.Length / 2; i++)
         {
-            byte b = bytes[i];
-            bytes[i] = bytes[bytes.Length - i - 1];
-            bytes[bytes.Length - i - 1] = b;
+            byte b = output[i];
+            output[i] = output[output.Length - i - 1];
+            output[output.Length - i - 1] = b;
         }
+
+        return output;
     }
 }

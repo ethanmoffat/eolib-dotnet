@@ -149,8 +149,7 @@ public sealed class EoWriter
     {
         byte[] bytes = StringEncoder.Encoding.GetBytes(str);
         SanitizeString(bytes);
-        StringEncoder.EncodeString(bytes);
-        AddBytes(bytes);
+        AddBytes(StringEncoder.EncodeString(bytes));
     }
 
     /// <summary>
@@ -180,8 +179,7 @@ public sealed class EoWriter
         {
             bytes = AddPadding(bytes, length);
         }
-        StringEncoder.EncodeString(bytes);
-        AddBytes(bytes);
+        AddBytes(StringEncoder.EncodeString(bytes));
     }
 
     /// <summary>
