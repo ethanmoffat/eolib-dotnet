@@ -110,6 +110,16 @@ public static class DataEncrypter
     /// <returns>The modified data</returns>
     public static byte[] SwapMultiples(byte[] data, int multi)
     {
+        if (multi < 0)
+        {
+            throw new ArgumentException("multi must not be less than zero", nameof(multi));
+        }
+
+        if (multi == 0)
+        {
+            return data;
+        }
+
         int num1 = 0;
 
         var result = new byte[data.Length];
