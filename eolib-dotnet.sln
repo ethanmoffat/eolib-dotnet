@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EOLib.Test", "EOLib.Test\EO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolGenerator", "ProtocolGenerator\ProtocolGenerator.csproj", "{A21A28FE-14FF-4CEC-B686-EAC4A04A04DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolGenerator.Test", "ProtocolGenerator.Test\ProtocolGenerator.Test.csproj", "{DF916531-4CA5-476D-8AF0-2813D84691CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{A21A28FE-14FF-4CEC-B686-EAC4A04A04DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A21A28FE-14FF-4CEC-B686-EAC4A04A04DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A21A28FE-14FF-4CEC-B686-EAC4A04A04DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF916531-4CA5-476D-8AF0-2813D84691CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF916531-4CA5-476D-8AF0-2813D84691CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF916531-4CA5-476D-8AF0-2813D84691CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF916531-4CA5-476D-8AF0-2813D84691CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
