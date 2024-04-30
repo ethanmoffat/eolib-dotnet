@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using Microsoft.CodeAnalysis.Text;
+using ProtocolGenerator.Model.Protocol;
 using ProtocolGenerator.Model.Xml;
 
 namespace ProtocolGenerator;
@@ -56,20 +58,29 @@ public class ProtocolGenerator
 
         var serializer = new XmlSerializer(typeof(ProtocolSpec));
         var model = (ProtocolSpec)serializer.Deserialize(ms);
+        var allSpecs = model.Enums.Concat<object>(model.Packets).Concat(model.Structs);
 
         var sb = new StringBuilder($"namespace {Namespace};");
-        var typeRegistry = new Dictionary<string, string>();
-
-        foreach (var type in model.Enums)
+        foreach (var type in allSpecs)
         {
-            var generated = Generate(type, typeRegistry);
+            string generated;
+
+            if (type is ProtocolEnum e)
+                generated = Generate(e);
+            else if (type is ProtocolStruct s)
+                generated = Generate(s);
+            else if (type is ProtocolPacket p)
+                generated = Generate(p);
+            else
+                continue;
+
             sb.Append($"\n{generated}\n");
         }
 
         return SourceText.From(sb.ToString(), Encoding.UTF8);
     }
 
-    private string Generate(ProtocolEnum inputType, Dictionary<string, string> typeRegistry)
+    private string Generate(ProtocolEnum inputType)
     {
         var state = new GeneratorState();
 
@@ -82,5 +93,117 @@ public class ProtocolGenerator
         state.EndBlock();
 
         return state.Output();
+    }
+
+    private string Generate(ProtocolStruct inputType)
+    {
+        var state = new GeneratorState();
+
+        state.Comment(inputType.Comment);
+        state.Attribute("Generated");
+
+        state.TypeDeclaration(GeneratorState.Visibility.Public, GeneratorState.ObjectType.Class, inputType.Name);
+        state.BeginBlock();
+        GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
+        state.EndBlock();
+
+        return state.Output();
+    }
+
+    private string Generate(ProtocolPacket inputType)
+    {
+        var state = new GeneratorState();
+
+        state.Comment(inputType.Comment);
+        state.Attribute("Generated");
+
+        var clientOrServer = HintName.Contains("Client")
+            ? "Client"
+            : HintName.Contains("Server")
+                ? "Server"
+                : string.Empty;
+
+        state.TypeDeclaration(GeneratorState.Visibility.Public, GeneratorState.ObjectType.Class, $"{inputType.Family}{inputType.Action}{clientOrServer}Packet", "IPacket");
+        state.BeginBlock();
+        GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
+        state.EndBlock();
+
+        return state.Output();
+    }
+
+    private void GenerateStructureImplementation(GeneratorState state, List<IProtocolInstruction> instructions)
+    {
+        // Generate nested types. Each switch case is represented by a nested structure with data relevant to the switch case.
+        // The switch case as a member is represented by an interface, with each "case" being a different implementation of that interface.
+        foreach (var inst in instructions)
+        {
+            foreach (var nestedType in inst.GetNestedTypes())
+            {
+                Generate(nestedType);
+            }
+        }
+
+        // Generate properties. Most instructions are represented in a structure by a property.
+        // A property may be a primitive type or a structure defined elsewhere in the protocol.
+        foreach (var inst in instructions)
+        {
+            inst.GenerateProperty(state);
+        }
+
+        // Generate the Serialize method for the structure.
+        state.MethodDeclaration(
+            GeneratorState.Visibility.Public, "void", "Serialize", new List<(string, string)> { ("EoWriter", "writer") }
+        );
+        state.BeginBlock();
+        foreach (var inst in instructions)
+        {
+            inst.GenerateSerialize(state);
+        }
+        state.EndBlock();
+
+        // Generate the Deserialize method for the structure.
+        state.MethodDeclaration(
+            GeneratorState.Visibility.Public, "void", "Deserialize", new List<(string, string)> { ("EoReader", "reader") }
+        );
+        state.BeginBlock();
+        foreach (var inst in instructions)
+        {
+            inst.GenerateDeserialize(state);
+        }
+        state.EndBlock();
+
+        // Generate ToString, Equals, and GetHashCode overrides.
+        state.MethodDeclaration(
+            GeneratorState.Visibility.Public, "override string", "ToString", new List<(string, string)>()
+        );
+        state.BeginBlock();
+        state.Return("string.Empty"); // todo: state.Return(endStatement: false);
+        foreach (var inst in instructions)
+        {
+            inst.GenerateToString(state);
+        }
+        state.EndBlock();
+
+        state.MethodDeclaration(
+            GeneratorState.Visibility.Public, "override bool", "Equals", new List<(string, string)> { ("object", "other") }
+        );
+        state.BeginBlock();
+        state.Return("false"); // todo: state.Return(endStatement: false);
+        foreach (var inst in instructions)
+        {
+            inst.GenerateEquals(state);
+        }
+        state.EndBlock();
+
+        state.MethodDeclaration(
+            GeneratorState.Visibility.Public, "override int", "GetHashCode", new List<(string, string)>()
+        );
+        state.BeginBlock();
+        state.Return("0"); // todo: state.Return(endStatement: false);
+        foreach (var inst in instructions)
+        {
+            inst.GenerateGetHashCode(state);
+        }
+        state.EndBlock();
     }
 }

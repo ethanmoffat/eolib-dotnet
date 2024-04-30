@@ -46,7 +46,7 @@ public class GeneratorState
         AppendIndentedLine($"[{attributeName}]");
     }
 
-    public void TypeDeclaration(Visibility visibility, ObjectType objectType, string typeName, string baseType)
+    public void TypeDeclaration(Visibility visibility, ObjectType objectType, string typeName, string baseType = "")
     {
         AppendIndented($"{String(visibility)} {String(objectType)} {typeName}");
         if (!string.IsNullOrWhiteSpace(baseType))
@@ -65,6 +65,15 @@ public class GeneratorState
         {
             AppendLine();
         }
+    }
+
+    public void MethodDeclaration(Visibility visibility, string returnType, string methodName, List<(string, string)> parameterNamesAndTypes)
+    {
+        var sb = new StringBuilder();
+        foreach (var p in parameterNamesAndTypes)
+            sb.Append($"{p.Item1} {p.Item2}");
+
+        AppendIndentedLine($"{String(visibility)} {returnType} {methodName}({sb})");
     }
 
     public void BeginBlock()
@@ -86,6 +95,11 @@ public class GeneratorState
             Comment(value.Comment);
             AppendIndentedLine($"{value.Name.Trim()} = {value.Value.Trim()},");
         }
+    }
+
+    public void Return(string returnValue = "", bool endStatement = true)
+    {
+        AppendIndentedLine($"return {returnValue}{(endStatement ? ";" : "")}");
     }
 
     private void AppendIndented(string value) => _output.Append($"{Indent()}{value}");
