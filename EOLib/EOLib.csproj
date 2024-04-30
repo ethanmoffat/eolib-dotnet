@@ -23,11 +23,11 @@
 
         <!-- AdditionalFiles makes the pattern available in the AdditionalTextsProvider of the
              generator context -->
-        <AdditionalFiles Include="$(ProtocolGenerator_InputDirectory)/**/*.xml" />
+        <AdditionalFiles Include="$(ProtocolGenerator_InputDirectory)\**\*.xml" />
     </ItemGroup>
 
     <PropertyGroup>
-        <ProtocolGenerator_InputDirectory>../eo-protocol</ProtocolGenerator_InputDirectory>
+        <ProtocolGenerator_InputDirectory>..\eo-protocol</ProtocolGenerator_InputDirectory>
     </PropertyGroup>
 
 </Project>

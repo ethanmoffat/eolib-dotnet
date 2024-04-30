@@ -36,7 +36,7 @@ public interface IPacket
 
     internal static void CreatePacketInterface(IncrementalGeneratorPostInitializationContext context)
     {
-        context.AddSource("protocol.Net.IPacket", SourceText.From(IPacketInterface, Encoding.UTF8));
-        context.AddSource("globalusings", SourceText.From(GlobalUsings, Encoding.UTF8));
+        context.AddSource("protocol.Net.IPacket.g", SourceText.From(IPacketInterface, Encoding.UTF8));
+        context.AddSource("globalusings.g", SourceText.From(GlobalUsings, Encoding.UTF8));
     }
 }

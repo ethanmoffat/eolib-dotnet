@@ -22,11 +22,11 @@ public class ProtocolGenerator
     {
         get
         {
-            var split = _filePath.Split(new[] { '/' }, System.StringSplitOptions.RemoveEmptyEntries);
+            var split = _filePath.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
             var parts = split
-                .SkipWhile(x => x != "xml")
+                .SkipWhile(x => !x.Equals("xml", StringComparison.OrdinalIgnoreCase))
                 .Skip(1)
-                .TakeWhile(x => !x.Equals("protocol.xml", System.StringComparison.OrdinalIgnoreCase))
+                .TakeWhile(x => !x.Equals("protocol.xml", StringComparison.OrdinalIgnoreCase))
                 .Select(x => char.ToUpper(x[0]) + x.Substring(1));
             var joinedParts = string.Join(".", parts);
             return string.IsNullOrWhiteSpace(joinedParts) ? "protocol.g.cs" : $"protocol.{joinedParts}.g.cs";
