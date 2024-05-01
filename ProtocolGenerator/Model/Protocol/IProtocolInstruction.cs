@@ -4,6 +4,12 @@ namespace ProtocolGenerator.Model.Protocol;
 
 public interface IProtocolInstruction
 {
+    string TypeName { get; }
+
+    string Name { get; }
+
+    string Comment { get; }
+
     List<Xml.ProtocolStruct> GetNestedTypes();
 
     void GenerateProperty(GeneratorState state);

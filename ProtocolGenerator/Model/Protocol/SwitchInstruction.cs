@@ -3,23 +3,25 @@ using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator.Model.Protocol;
 
-public class SwitchInstruction : IProtocolInstruction
+public class SwitchInstruction : BaseInstruction
 {
     private readonly Xml.ProtocolSwitchInstruction _xmlSwitchInstruction;
 
     public SwitchInstruction(Xml.ProtocolSwitchInstruction xmlSwitchInstruction)
     {
         _xmlSwitchInstruction = xmlSwitchInstruction;
+
+        TypeName = GetSwitchInterfaceType(_xmlSwitchInstruction.Field);
+        Name = GetSwitchInterfaceMemberName(_xmlSwitchInstruction.Field);
     }
 
-    public List<Xml.ProtocolStruct> GetNestedTypes()
+    public override List<Xml.ProtocolStruct> GetNestedTypes()
     {
-        var switchInterfaceName = GetSwitchInterfaceType(_xmlSwitchInstruction.Field);
         var nestedTypes = new List<Xml.ProtocolStruct>
         {
             new Xml.ProtocolStruct
             {
-                Name = switchInterfaceName,
+                Name = TypeName,
                 Instructions = new List<object>(),
                 IsInterface = true,
             }
@@ -35,44 +37,11 @@ public class SwitchInstruction : IProtocolInstruction
                 Name = GetSwitchCaseName(_xmlSwitchInstruction.Field, c.Value, c.Default),
                 Comment = c.Comment,
                 Instructions = c.Instructions,
-                BaseType = switchInterfaceName,
+                BaseType = TypeName,
             });
         }
 
         return nestedTypes;
-    }
-
-    public void GenerateProperty(GeneratorState state)
-    {
-        state.Property(
-            GeneratorState.Visibility.Public,
-            GetSwitchInterfaceType(_xmlSwitchInstruction.Field),
-            GetSwitchInterfaceMemberName(_xmlSwitchInstruction.Field)
-        );
-        state.BeginBlock();
-        state.AutoGet(GeneratorState.Visibility.None);
-        state.AutoSet(GeneratorState.Visibility.None);
-        state.EndBlock();
-    }
-
-    public void GenerateSerialize(GeneratorState state)
-    {
-    }
-
-    public void GenerateDeserialize(GeneratorState state)
-    {
-    }
-
-    public void GenerateToString(GeneratorState state)
-    {
-    }
-
-    public void GenerateEquals(GeneratorState state)
-    {
-    }
-
-    public void GenerateGetHashCode(GeneratorState state)
-    {
     }
 
     private static string GetSwitchInterfaceType(string fieldName)
