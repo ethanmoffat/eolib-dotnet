@@ -51,7 +51,7 @@ public class GeneratorState
         AppendIndented($"{String(visibility)} {String(objectType)} {typeName}");
         if (!string.IsNullOrWhiteSpace(baseType))
         {
-            var convertedType = TypeConverter.ToPrimitive(baseType);
+            var convertedType = TypeConverter.GetType(baseType);
             if (!string.IsNullOrWhiteSpace(convertedType) && convertedType != "int")
             {
                 AppendLine($" : {convertedType}");
@@ -100,6 +100,15 @@ public class GeneratorState
     public void Return(string returnValue = "", bool endStatement = true)
     {
         AppendIndentedLine($"return {returnValue}{(endStatement ? ";" : "")}");
+    }
+
+    public void AutoProperty(Visibility visibility, string type, string name, string impl)
+    {
+        var vis = String(visibility);
+        if (vis.Length > 0)
+            AppendIndentedLine($"{vis} {type} {name} => {impl};");
+        else
+            AppendIndentedLine($"{type} {name} => {impl};");
     }
 
     private void AppendIndented(string value) => _output.Append($"{Indent()}{value}");

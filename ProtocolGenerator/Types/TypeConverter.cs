@@ -19,4 +19,16 @@ public static class TypeConverter
                 return string.Empty;
         }
     }
+
+    public static string GetType(string inputType, bool isArray = false)
+    {
+        var ret = ToPrimitive(inputType);
+        if (string.IsNullOrWhiteSpace(ret))
+            ret = inputType;
+
+        if (isArray)
+            ret += "[]";
+
+        return ret;
+    }
 }

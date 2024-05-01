@@ -125,6 +125,18 @@ public class ProtocolGenerator
 
         state.TypeDeclaration(GeneratorState.Visibility.Public, GeneratorState.ObjectType.Class, $"{inputType.Family}{inputType.Action}{clientOrServer}Packet", "IPacket");
         state.BeginBlock();
+        state.AutoProperty(
+            GeneratorState.Visibility.Public,
+            "PacketFamily",
+            "Family",
+            $"PacketFamily.{inputType.Family}"
+        );
+        state.AutoProperty(
+            GeneratorState.Visibility.Public,
+            "PacketAction",
+            "Action",
+            $"PacketAction.{inputType.Action}"
+        );
         GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
         state.EndBlock();
 
