@@ -10,6 +10,7 @@ public class GeneratorState
 {
     public enum Visibility
     {
+        None,
         Public,
         Private
     }
@@ -18,7 +19,8 @@ public class GeneratorState
     {
         Class,
         Struct,
-        Enum
+        Enum,
+        Interface,
     }
 
     private readonly StringBuilder _output = new();
@@ -102,6 +104,15 @@ public class GeneratorState
         AppendIndentedLine($"return {returnValue}{(endStatement ? ";" : "")}");
     }
 
+    public void Property(Visibility visibility, string type, string name)
+    {
+        var vis = String(visibility);
+        if (vis.Length > 0)
+            AppendIndentedLine($"{vis} {type} {name}");
+        else
+            AppendIndentedLine($"{type} {name}");
+    }
+
     public void AutoProperty(Visibility visibility, string type, string name, string impl)
     {
         var vis = String(visibility);
@@ -110,6 +121,26 @@ public class GeneratorState
         else
             AppendIndentedLine($"{type} {name} => {impl};");
     }
+
+    public void AutoGet(Visibility visibility)
+    {
+        var vis = String(visibility);
+        if (vis.Length > 0)
+            AppendIndentedLine($"{vis} get;");
+        else
+            AppendIndentedLine($"get;");
+    }
+
+    public void AutoSet(Visibility visibility)
+    {
+        var vis = String(visibility);
+        if (vis.Length > 0)
+            AppendIndentedLine($"{vis} set;");
+        else
+            AppendIndentedLine($"set;");
+    }
+
+    public void NewLine() => AppendLine();
 
     private void AppendIndented(string value) => _output.Append($"{Indent()}{value}");
 
@@ -144,6 +175,7 @@ public class GeneratorState
             ObjectType.Enum => "enum",
             ObjectType.Class => "class",
             ObjectType.Struct => "struct",
+            ObjectType.Interface => "interface",
             _ => "",
         };
     }

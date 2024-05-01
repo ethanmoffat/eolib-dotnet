@@ -1,22 +1,36 @@
 using System.Collections.Generic;
-using ProtocolGenerator.Model.Xml;
+using System.Linq;
 
 namespace ProtocolGenerator.Model.Protocol;
 
 public class ChunkedInstruction : IProtocolInstruction
 {
+    private readonly Xml.ProtocolChunkedInstruction _xmlChunkedInstruction;
+    private readonly IReadOnlyList<IProtocolInstruction> _transformed;
+
     public ChunkedInstruction(Xml.ProtocolChunkedInstruction xmlChunkedInstruction)
     {
-
+        _xmlChunkedInstruction = xmlChunkedInstruction;
+        _transformed = _xmlChunkedInstruction.Instructions.Select(ProtocolInstructionFactory.Transform).ToList();
     }
 
-    public List<ProtocolStruct> GetNestedTypes()
+    public List<Xml.ProtocolStruct> GetNestedTypes()
     {
-        return new List<ProtocolStruct>();
+        var nestedTypes = new List<Xml.ProtocolStruct>();
+        foreach (var i in _transformed.OfType<SwitchInstruction>())
+        {
+            nestedTypes.AddRange(i.GetNestedTypes());
+        }
+        return nestedTypes;
     }
 
     public void GenerateProperty(GeneratorState state)
     {
+        foreach (var inst in _transformed)
+        {
+            inst.GenerateProperty(state);
+            state.NewLine();
+        }
     }
 
     public void GenerateSerialize(GeneratorState state)

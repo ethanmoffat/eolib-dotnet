@@ -1,18 +1,12 @@
 using System.Collections.Generic;
-using ProtocolGenerator.Model.Xml;
 
 namespace ProtocolGenerator.Model.Protocol;
 
 public class BreakInstruction : IProtocolInstruction
 {
-    public BreakInstruction(Xml.ProtocolBreakInstruction xmlBreakInstruction)
+    public List<Xml.ProtocolStruct> GetNestedTypes()
     {
-
-    }
-
-    public List<ProtocolStruct> GetNestedTypes()
-    {
-        return new List<ProtocolStruct>();
+        return new List<Xml.ProtocolStruct>();
     }
 
     public void GenerateProperty(GeneratorState state)

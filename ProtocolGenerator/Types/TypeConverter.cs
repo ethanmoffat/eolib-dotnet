@@ -4,6 +4,11 @@ public static class TypeConverter
 {
     public static string ToPrimitive(string inputType)
     {
+        if (inputType.Contains(":"))
+        {
+            inputType = inputType.Split(':')[0];
+        }
+
         switch (inputType)
         {
             case "byte":
@@ -11,10 +16,14 @@ public static class TypeConverter
             case "short":
             case "three":
             case "int":
-            case "bool":
                 return "int";
+            case "bool":
+                return "bool";
             case "blob":
                 return "byte[]";
+            case "string":
+            case "encoded_string":
+                return "string";
             default:
                 return string.Empty;
         }
@@ -22,12 +31,17 @@ public static class TypeConverter
 
     public static string GetType(string inputType, bool isArray = false)
     {
+        if (inputType.Contains(":"))
+        {
+            inputType = inputType.Split(':')[0];
+        }
+
         var ret = ToPrimitive(inputType);
         if (string.IsNullOrWhiteSpace(ret))
             ret = inputType;
 
         if (isArray)
-            ret += "[]";
+            ret = $"List<{ret}>";
 
         return ret;
     }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using ProtocolGenerator.Model.Xml;
 
 namespace ProtocolGenerator.Model.Protocol;
 
@@ -7,12 +6,11 @@ public class DummyInstruction : IProtocolInstruction
 {
     public DummyInstruction(Xml.ProtocolDummyInstruction xmlDummyInstruction)
     {
-
     }
 
-    public List<ProtocolStruct> GetNestedTypes()
+    public List<Xml.ProtocolStruct> GetNestedTypes()
     {
-        return new List<ProtocolStruct>();
+        return new List<Xml.ProtocolStruct>();
     }
 
     public void GenerateProperty(GeneratorState state)

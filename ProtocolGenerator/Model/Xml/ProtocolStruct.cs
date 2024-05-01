@@ -19,4 +19,10 @@ public sealed class ProtocolStruct
 
     [XmlAttribute("comment")]
     public string Comment { get; set; }
+
+    [XmlIgnore]
+    public bool IsInterface { get; set; }
+
+    [XmlIgnore]
+    public string BaseType { get; set; }
 }

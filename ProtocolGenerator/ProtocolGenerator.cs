@@ -74,7 +74,7 @@ public class ProtocolGenerator
             else
                 continue;
 
-            sb.Append($"\n{generated}\n");
+            sb.AppendLine($"{generated}");
         }
 
         return SourceText.From(sb.ToString(), Encoding.UTF8);
@@ -95,16 +95,24 @@ public class ProtocolGenerator
         return state.Output();
     }
 
-    private string Generate(ProtocolStruct inputType)
+    private string Generate(ProtocolStruct inputType, GeneratorState state = null)
     {
-        var state = new GeneratorState();
+        state ??= new GeneratorState();
 
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
 
-        state.TypeDeclaration(GeneratorState.Visibility.Public, GeneratorState.ObjectType.Class, inputType.Name);
+        state.TypeDeclaration(
+            GeneratorState.Visibility.Public,
+            inputType.IsInterface ? GeneratorState.ObjectType.Interface : GeneratorState.ObjectType.Class,
+            inputType.Name,
+            string.IsNullOrWhiteSpace(inputType.BaseType) ? string.Empty : inputType.BaseType
+        );
         state.BeginBlock();
-        GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
+        if (!inputType.IsInterface)
+        {
+            GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
+        }
         state.EndBlock();
 
         return state.Output();
@@ -131,12 +139,14 @@ public class ProtocolGenerator
             "Family",
             $"PacketFamily.{inputType.Family}"
         );
+        state.NewLine();
         state.AutoProperty(
             GeneratorState.Visibility.Public,
             "PacketAction",
             "Action",
             $"PacketAction.{inputType.Action}"
         );
+        state.NewLine();
         GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
         state.EndBlock();
 
@@ -151,7 +161,8 @@ public class ProtocolGenerator
         {
             foreach (var nestedType in inst.GetNestedTypes())
             {
-                Generate(nestedType);
+                Generate(nestedType, state);
+                state.NewLine();
             }
         }
 
@@ -160,6 +171,7 @@ public class ProtocolGenerator
         foreach (var inst in instructions)
         {
             inst.GenerateProperty(state);
+            state.NewLine();
         }
 
         // Generate the Serialize method for the structure.
@@ -172,6 +184,7 @@ public class ProtocolGenerator
             inst.GenerateSerialize(state);
         }
         state.EndBlock();
+        state.NewLine();
 
         // Generate the Deserialize method for the structure.
         state.MethodDeclaration(
@@ -183,6 +196,7 @@ public class ProtocolGenerator
             inst.GenerateDeserialize(state);
         }
         state.EndBlock();
+        state.NewLine();
 
         // Generate ToString, Equals, and GetHashCode overrides.
         state.MethodDeclaration(
@@ -195,6 +209,7 @@ public class ProtocolGenerator
             inst.GenerateToString(state);
         }
         state.EndBlock();
+        state.NewLine();
 
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override bool", "Equals", new List<(string, string)> { ("object", "other") }
@@ -206,6 +221,7 @@ public class ProtocolGenerator
             inst.GenerateEquals(state);
         }
         state.EndBlock();
+        state.NewLine();
 
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override int", "GetHashCode", new List<(string, string)>()

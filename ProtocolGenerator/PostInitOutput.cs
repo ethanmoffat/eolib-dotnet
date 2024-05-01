@@ -32,7 +32,8 @@ public interface IPacket
     void Serialize(EoWriter writer);
 }";
 
-    private const string GlobalUsings = @"global using EOLib.Data;";
+    private const string GlobalUsings = @"global using EOLib.Data;
+global using EOLib.Protocol.Pub;";
 
     internal static void CreatePacketInterface(IncrementalGeneratorPostInitializationContext context)
     {
