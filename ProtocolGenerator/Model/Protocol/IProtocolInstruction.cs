@@ -24,7 +24,5 @@ public interface IProtocolInstruction
 
     void GenerateToString(GeneratorState state);
 
-    void GenerateEquals(GeneratorState state);
-
-    void GenerateGetHashCode(GeneratorState state);
+    void GenerateEquals(GeneratorState state, string rhsIdentifier);
 }

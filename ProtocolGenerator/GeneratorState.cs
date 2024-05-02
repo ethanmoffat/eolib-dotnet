@@ -143,19 +143,9 @@ public class GeneratorState
 
     public void NewLine() => AppendLine();
 
-    public string ParameterList(List<(string, string)> parameterNamesAndTypes)
+    public void MethodInvocation(string methodName, params string[] parameters)
     {
-        var sb = new StringBuilder("(");
-        for (int i = 0; i < parameterNamesAndTypes.Count; i++)
-        {
-            if (i != 0)
-                sb.Append(",");
-
-            var p = parameterNamesAndTypes[i];
-            sb.Append($"{p.Item1} {p.Item2}");
-        }
-        sb.Append(")");
-        return sb.ToString();
+        _output.Append($".{methodName}({string.Join(", ", parameters)})");
     }
 
     public void Text(string text, bool indented)
@@ -179,6 +169,21 @@ public class GeneratorState
         {
             sb.Append("    ");
         }
+        return sb.ToString();
+    }
+
+    private string ParameterList(List<(string, string)> parameterNamesAndTypes)
+    {
+        var sb = new StringBuilder("(");
+        for (int i = 0; i < parameterNamesAndTypes.Count; i++)
+        {
+            if (i != 0)
+                sb.Append(",");
+
+            var p = parameterNamesAndTypes[i];
+            sb.Append($"{p.Item1} {p.Item2}");
+        }
+        sb.Append(")");
         return sb.ToString();
     }
 

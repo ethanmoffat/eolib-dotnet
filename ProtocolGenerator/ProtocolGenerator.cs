@@ -240,11 +240,57 @@ public class ProtocolGenerator
             GeneratorState.Visibility.Public, "override bool", "Equals", new List<(string, string)> { ("object", "other") }
         );
         state.BeginBlock();
-        state.Return("false"); // todo: state.Return(endStatement: false);
-        foreach (var inst in instructions)
+
+        state.Text("if (this == other) return true;", indented: true);
+        state.NewLine();
+        state.NewLine();
+
+        state.Text($"if (this is not {typeName} rhs) return false;", indented: true);
+        state.NewLine();
+        state.NewLine();
+
+        if (instructions.Count(x => x.HasProperty) > 0)
         {
-            inst.GenerateEquals(state);
+            state.Return(endStatement: false);
+
+            var indentedFurther = false;
+            var memberIndex = 0;
+            foreach (var inst in instructions.Where(x => x.HasProperty))
+            {
+                if (memberIndex == 1)
+                {
+                    state.IncreaseIndent();
+                    indentedFurther = true;
+                }
+
+                if (memberIndex != 0)
+                {
+                    state.Text("&& ", indented: true);
+                }
+
+                inst.GenerateEquals(state, "rhs");
+
+                if (memberIndex != instructions.Count - 1)
+                {
+                    state.NewLine();
+                }
+
+                memberIndex++;
+            }
+
+            state.Text(";", indented: false);
+            state.NewLine();
+
+            if (indentedFurther)
+            {
+                state.DecreaseIndent();
+            }
         }
+        else
+        {
+            state.Return("true");
+        }
+
         state.EndBlock();
     }
 
@@ -254,11 +300,32 @@ public class ProtocolGenerator
                 GeneratorState.Visibility.Public, "override int", "GetHashCode", new List<(string, string)>()
             );
         state.BeginBlock();
-        state.Return("0"); // todo: state.Return(endStatement: false);
-        foreach (var inst in instructions)
+
+        if (instructions.Count(x => x.HasProperty) > 0)
         {
-            inst.GenerateGetHashCode(state);
+            state.Text("unchecked", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+
+            state.Text("int hash = 17;", indented: true);
+            state.NewLine();
+
+            foreach (var inst in instructions.Where(x => x.HasProperty))
+            {
+                state.Text($"hash = hash * 23 + {inst.Name}", indented: true);
+                state.MethodInvocation("GetHashCode");
+                state.Text(";", indented: false);
+                state.NewLine();
+            }
+
+            state.Return("hash");
+            state.EndBlock();
         }
+        else
+        {
+            state.Return("GetType().GetHashCode()");
+        }
+
         state.EndBlock();
     }
 

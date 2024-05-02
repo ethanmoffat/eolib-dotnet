@@ -42,7 +42,12 @@ public class BaseInstruction : IProtocolInstruction
         state.Text($"$\"{{nameof({Name})}}={{{Name}}}\"", indented: false);
     }
 
-    public virtual void GenerateEquals(GeneratorState state) { }
+    public virtual void GenerateEquals(GeneratorState state, string rhsIdentifier)
+    {
+        if (!HasProperty)
+            return;
 
-    public virtual void GenerateGetHashCode(GeneratorState state) { }
+        state.Text($"{Name}", indented: false);
+        state.MethodInvocation("Equals", $"{rhsIdentifier}.{Name}");
+    }
 }
