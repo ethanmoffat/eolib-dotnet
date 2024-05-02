@@ -63,27 +63,25 @@ public class ProtocolGenerator
         var sb = new StringBuilder($"namespace {Namespace};");
         foreach (var type in allSpecs)
         {
-            string generated;
+            var state = new GeneratorState();
 
             if (type is ProtocolEnum e)
-                generated = Generate(e);
+                Generate(e, state);
             else if (type is ProtocolStruct s)
-                generated = Generate(s);
+                Generate(s, state);
             else if (type is ProtocolPacket p)
-                generated = Generate(p);
+                Generate(p, state);
             else
                 continue;
 
-            sb.AppendLine($"{generated}");
+            sb.AppendLine(state.Output());
         }
 
         return SourceText.From(sb.ToString(), Encoding.UTF8);
     }
 
-    private string Generate(ProtocolEnum inputType)
+    private void Generate(ProtocolEnum inputType, GeneratorState state)
     {
-        var state = new GeneratorState();
-
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
 
@@ -91,14 +89,10 @@ public class ProtocolGenerator
         state.BeginBlock();
         state.ValuesList(inputType.Values);
         state.EndBlock();
-
-        return state.Output();
     }
 
-    private string Generate(ProtocolStruct inputType, GeneratorState state = null)
+    private void Generate(ProtocolStruct inputType, GeneratorState state)
     {
-        state ??= new GeneratorState();
-
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
 
@@ -111,17 +105,13 @@ public class ProtocolGenerator
         state.BeginBlock();
         if (!inputType.IsInterface)
         {
-            GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
+            GenerateStructureImplementation(state, inputType.Name, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
         }
         state.EndBlock();
-
-        return state.Output();
     }
 
-    private string Generate(ProtocolPacket inputType)
+    private void Generate(ProtocolPacket inputType, GeneratorState state)
     {
-        var state = new GeneratorState();
-
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
 
@@ -130,8 +120,9 @@ public class ProtocolGenerator
             : HintName.Contains("Server")
                 ? "Server"
                 : string.Empty;
+        var typeName = $"{inputType.Family}{inputType.Action}{clientOrServer}Packet";
 
-        state.TypeDeclaration(GeneratorState.Visibility.Public, GeneratorState.ObjectType.Class, $"{inputType.Family}{inputType.Action}{clientOrServer}Packet", "IPacket");
+        state.TypeDeclaration(GeneratorState.Visibility.Public, GeneratorState.ObjectType.Class, typeName, "IPacket");
         state.BeginBlock();
         state.AutoProperty(
             GeneratorState.Visibility.Public,
@@ -147,13 +138,11 @@ public class ProtocolGenerator
             $"PacketAction.{inputType.Action}"
         );
         state.NewLine();
-        GenerateStructureImplementation(state, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
+        GenerateStructureImplementation(state, typeName, inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList());
         state.EndBlock();
-
-        return state.Output();
     }
 
-    private void GenerateStructureImplementation(GeneratorState state, List<IProtocolInstruction> instructions)
+    private void GenerateStructureImplementation(GeneratorState state, string typeName, List<IProtocolInstruction> instructions)
     {
         // Generate nested types. Each switch case is represented by a nested structure with data relevant to the switch case.
         // The switch case as a member is represented by an interface, with each "case" being a different implementation of that interface.
@@ -171,7 +160,9 @@ public class ProtocolGenerator
         foreach (var inst in instructions)
         {
             inst.GenerateProperty(state);
-            state.NewLine();
+
+            if (inst.HasProperty)
+                state.NewLine();
         }
 
         // Generate the Serialize method for the structure.
@@ -198,19 +189,34 @@ public class ProtocolGenerator
         state.EndBlock();
         state.NewLine();
 
-        // Generate ToString, Equals, and GetHashCode overrides.
+        var flattenedInstructions = Flatten(instructions);
+
+        // Generate ToString override
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override string", "ToString", new List<(string, string)>()
         );
         state.BeginBlock();
-        state.Return("string.Empty"); // todo: state.Return(endStatement: false);
-        foreach (var inst in instructions)
+
+        state.Return(endStatement: false);
+        state.Text($"\"{typeName}{{\"", indented: false);
+        state.IncreaseIndent();
+        var memberIndex = 0;
+        foreach (var inst in flattenedInstructions.Where(x => x.HasProperty))
         {
+            state.NewLine();
+            state.Text($"+ {(memberIndex != 0 ? "\",\" + " : string.Empty)}", indented: true);
             inst.GenerateToString(state);
+            memberIndex++;
         }
+        state.NewLine();
+        state.Text("+ \"}\";", indented: true);
+        state.NewLine();
+        state.DecreaseIndent();
+
         state.EndBlock();
         state.NewLine();
 
+        // Generate Equals override
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override bool", "Equals", new List<(string, string)> { ("object", "other") }
         );
@@ -223,6 +229,7 @@ public class ProtocolGenerator
         state.EndBlock();
         state.NewLine();
 
+        // Generate GetHashCode override
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override int", "GetHashCode", new List<(string, string)>()
         );
@@ -233,5 +240,18 @@ public class ProtocolGenerator
             inst.GenerateGetHashCode(state);
         }
         state.EndBlock();
+    }
+
+    private static List<IProtocolInstruction> Flatten(List<IProtocolInstruction> instructions)
+    {
+        var retList = new List<IProtocolInstruction>();
+        for (int i = 0; i < instructions.Count; i++)
+        {
+            if (instructions[i].Instructions.Count > 0)
+                retList.AddRange(instructions[i].Instructions);
+            else
+                retList.Add(instructions[i]);
+        }
+        return retList;
     }
 }

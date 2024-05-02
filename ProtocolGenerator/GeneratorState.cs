@@ -71,24 +71,24 @@ public class GeneratorState
 
     public void MethodDeclaration(Visibility visibility, string returnType, string methodName, List<(string, string)> parameterNamesAndTypes)
     {
-        var sb = new StringBuilder();
-        foreach (var p in parameterNamesAndTypes)
-            sb.Append($"{p.Item1} {p.Item2}");
-
-        AppendIndentedLine($"{String(visibility)} {returnType} {methodName}({sb})");
+        AppendIndentedLine($"{String(visibility)} {returnType} {methodName}{ParameterList(parameterNamesAndTypes)}");
     }
 
     public void BeginBlock()
     {
         AppendIndentedLine("{");
-        _indent++;
+        IncreaseIndent();
     }
 
     public void EndBlock()
     {
-        _indent = Math.Max(_indent - 1, 0);
+        DecreaseIndent();
         AppendIndentedLine("}");
     }
+
+    public void IncreaseIndent() => _indent++;
+
+    public void DecreaseIndent() => _indent = Math.Max(_indent - 1, 0);
 
     public void ValuesList(List<ProtocolEnumValue> values)
     {
@@ -101,7 +101,8 @@ public class GeneratorState
 
     public void Return(string returnValue = "", bool endStatement = true)
     {
-        AppendIndentedLine($"return {returnValue}{(endStatement ? ";" : "")}");
+        Action<string> fn = endStatement ? AppendIndentedLine : AppendIndented;
+        fn($"return {returnValue}{(endStatement ? ";" : "")}");
     }
 
     public void Property(Visibility visibility, string type, string name)
@@ -141,6 +142,29 @@ public class GeneratorState
     }
 
     public void NewLine() => AppendLine();
+
+    public string ParameterList(List<(string, string)> parameterNamesAndTypes)
+    {
+        var sb = new StringBuilder("(");
+        for (int i = 0; i < parameterNamesAndTypes.Count; i++)
+        {
+            if (i != 0)
+                sb.Append(",");
+
+            var p = parameterNamesAndTypes[i];
+            sb.Append($"{p.Item1} {p.Item2}");
+        }
+        sb.Append(")");
+        return sb.ToString();
+    }
+
+    public void Text(string text, bool indented)
+    {
+        if (indented)
+            AppendIndented(text);
+        else
+            _output.Append(text);
+    }
 
     private void AppendIndented(string value) => _output.Append($"{Indent()}{value}");
 

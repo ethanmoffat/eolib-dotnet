@@ -10,6 +10,10 @@ public interface IProtocolInstruction
 
     string Comment { get; }
 
+    bool HasProperty { get; }
+
+    List<IProtocolInstruction> Instructions { get; }
+
     List<Xml.ProtocolStruct> GetNestedTypes();
 
     void GenerateProperty(GeneratorState state);

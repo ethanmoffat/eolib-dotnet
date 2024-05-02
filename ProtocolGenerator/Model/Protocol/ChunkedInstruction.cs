@@ -5,19 +5,15 @@ namespace ProtocolGenerator.Model.Protocol;
 
 public class ChunkedInstruction : BaseInstruction
 {
-    private readonly Xml.ProtocolChunkedInstruction _xmlChunkedInstruction;
-    private readonly IReadOnlyList<IProtocolInstruction> _transformed;
-
     public ChunkedInstruction(Xml.ProtocolChunkedInstruction xmlChunkedInstruction)
     {
-        _xmlChunkedInstruction = xmlChunkedInstruction;
-        _transformed = _xmlChunkedInstruction.Instructions.Select(ProtocolInstructionFactory.Transform).ToList();
+        Instructions = xmlChunkedInstruction.Instructions.Select(ProtocolInstructionFactory.Transform).ToList();
     }
 
     public override List<Xml.ProtocolStruct> GetNestedTypes()
     {
         var nestedTypes = new List<Xml.ProtocolStruct>();
-        foreach (var i in _transformed.OfType<SwitchInstruction>())
+        foreach (var i in Instructions.OfType<SwitchInstruction>())
         {
             nestedTypes.AddRange(i.GetNestedTypes());
         }
@@ -26,10 +22,12 @@ public class ChunkedInstruction : BaseInstruction
 
     public override void GenerateProperty(GeneratorState state)
     {
-        foreach (var inst in _transformed)
+        foreach (var inst in Instructions)
         {
             inst.GenerateProperty(state);
-            state.NewLine();
+
+            if (inst.HasProperty)
+                state.NewLine();
         }
     }
 }

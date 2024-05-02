@@ -15,4 +15,9 @@ public class ArrayInstruction : BaseInstruction
         Name = IdentifierConverter.SnakeCaseToPascalCase(_xmlArrayInstruction.Name);
         TypeName = TypeConverter.GetType(_xmlArrayInstruction.Type, isArray: true);
     }
+
+    public override void GenerateToString(GeneratorState state)
+    {
+        state.Text($"$\"{{nameof({Name})}}=[{{string.Join(\",\", {Name}.Select(x => x.ToString()))}}]\"", indented: false);
+    }
 }

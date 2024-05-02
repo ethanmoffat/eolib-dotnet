@@ -11,14 +11,16 @@ public class BaseInstruction : IProtocolInstruction
 
     public string Comment { get; protected set; } = string.Empty;
 
+    public bool HasProperty => !string.IsNullOrWhiteSpace(Name);
+
+    public List<IProtocolInstruction> Instructions { get; protected set; } = new();
+
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
 
     public virtual void GenerateProperty(GeneratorState state)
     {
-        if (string.IsNullOrWhiteSpace(Name))
-        {
+        if (!HasProperty)
             return;
-        }
 
         state.Comment(Comment);
         state.Property(GeneratorState.Visibility.Public, TypeName, Name);
@@ -29,8 +31,18 @@ public class BaseInstruction : IProtocolInstruction
     }
 
     public virtual void GenerateSerialize(GeneratorState state) { }
+
     public virtual void GenerateDeserialize(GeneratorState state) { }
-    public virtual void GenerateToString(GeneratorState state) { }
+
+    public virtual void GenerateToString(GeneratorState state)
+    {
+        if (!HasProperty)
+            return;
+
+        state.Text($"$\"{{nameof({Name})}}={{{Name}}}\"", indented: false);
+    }
+
     public virtual void GenerateEquals(GeneratorState state) { }
+
     public virtual void GenerateGetHashCode(GeneratorState state) { }
 }
