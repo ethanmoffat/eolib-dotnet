@@ -165,7 +165,25 @@ public class ProtocolGenerator
                 state.NewLine();
         }
 
-        // Generate the Serialize method for the structure.
+        var flattenedInstructions = Flatten(instructions);
+
+        GenerateSerialize(state, instructions);
+        state.NewLine();
+
+        GenerateDeserialize(state, instructions);
+        state.NewLine();
+
+        GenerateToString(state, typeName, flattenedInstructions);
+        state.NewLine();
+
+        GenerateEquals(state, typeName, flattenedInstructions);
+        state.NewLine();
+
+        GenerateGetHashCode(state, typeName, flattenedInstructions);
+    }
+
+    private static void GenerateSerialize(GeneratorState state, List<IProtocolInstruction> instructions)
+    {
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "void", "Serialize", new List<(string, string)> { ("EoWriter", "writer") }
         );
@@ -175,9 +193,10 @@ public class ProtocolGenerator
             inst.GenerateSerialize(state);
         }
         state.EndBlock();
-        state.NewLine();
+    }
 
-        // Generate the Deserialize method for the structure.
+    private static void GenerateDeserialize(GeneratorState state, List<IProtocolInstruction> instructions)
+    {
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "void", "Deserialize", new List<(string, string)> { ("EoReader", "reader") }
         );
@@ -187,11 +206,10 @@ public class ProtocolGenerator
             inst.GenerateDeserialize(state);
         }
         state.EndBlock();
-        state.NewLine();
+    }
 
-        var flattenedInstructions = Flatten(instructions);
-
-        // Generate ToString override
+    private static void GenerateToString(GeneratorState state, string typeName, List<IProtocolInstruction> flattenedInstructions)
+    {
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override string", "ToString", new List<(string, string)>()
         );
@@ -214,9 +232,10 @@ public class ProtocolGenerator
         state.DecreaseIndent();
 
         state.EndBlock();
-        state.NewLine();
+    }
 
-        // Generate Equals override
+    private static void GenerateEquals(GeneratorState state, string typeName, List<IProtocolInstruction> instructions)
+    {
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "override bool", "Equals", new List<(string, string)> { ("object", "other") }
         );
@@ -227,12 +246,13 @@ public class ProtocolGenerator
             inst.GenerateEquals(state);
         }
         state.EndBlock();
-        state.NewLine();
+    }
 
-        // Generate GetHashCode override
+    private static void GenerateGetHashCode(GeneratorState state, string typeName, List<IProtocolInstruction> instructions)
+    {
         state.MethodDeclaration(
-            GeneratorState.Visibility.Public, "override int", "GetHashCode", new List<(string, string)>()
-        );
+                GeneratorState.Visibility.Public, "override int", "GetHashCode", new List<(string, string)>()
+            );
         state.BeginBlock();
         state.Return("0"); // todo: state.Return(endStatement: false);
         foreach (var inst in instructions)
