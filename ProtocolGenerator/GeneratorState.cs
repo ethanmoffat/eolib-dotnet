@@ -74,16 +74,26 @@ public class GeneratorState
         AppendIndentedLine($"{String(visibility)} {returnType} {methodName}{ParameterList(parameterNamesAndTypes)}");
     }
 
-    public void BeginBlock()
+    public void BeginBlock(bool newLine = true, bool indented = true)
     {
-        AppendIndentedLine("{");
+        Action<string> fn = newLine ? AppendIndentedLine : AppendIndented;
+        if (!indented)
+            fn = newLine ? AppendLine : Append;
+
+        fn("{");
+
         IncreaseIndent();
     }
 
-    public void EndBlock()
+    public void EndBlock(bool newLine = true, bool indented = true)
     {
         DecreaseIndent();
-        AppendIndentedLine("}");
+
+        Action<string> fn = newLine ? AppendIndentedLine : AppendIndented;
+        if (!indented)
+            fn = newLine ? AppendLine : Append;
+
+        fn("}");
     }
 
     public void IncreaseIndent() => _indent++;
@@ -105,13 +115,17 @@ public class GeneratorState
         fn($"return {returnValue}{(endStatement ? ";" : "")}");
     }
 
-    public void Property(Visibility visibility, string type, string name)
+    public void Property(Visibility visibility, string type, string name, bool newLine = true, bool indented = true)
     {
+        Action<string> fn = newLine ? AppendIndentedLine : AppendIndented;
+        if (!indented)
+            fn = newLine ? AppendLine : Append;
+
         var vis = String(visibility);
         if (vis.Length > 0)
-            AppendIndentedLine($"{vis} {type} {name}");
+            fn($"{vis} {type} {name}");
         else
-            AppendIndentedLine($"{type} {name}");
+            fn($"{type} {name}");
     }
 
     public void AutoProperty(Visibility visibility, string type, string name, string impl)
@@ -123,29 +137,37 @@ public class GeneratorState
             AppendIndentedLine($"{type} {name} => {impl};");
     }
 
-    public void AutoGet(Visibility visibility)
+    public void AutoGet(Visibility visibility, bool newLine = true, bool indented = true)
     {
+        Action<string> fn = newLine ? AppendIndentedLine : AppendIndented;
+        if (!indented)
+            fn = newLine ? AppendLine : Append;
+
         var vis = String(visibility);
         if (vis.Length > 0)
-            AppendIndentedLine($"{vis} get;");
+            fn($"{vis} get;");
         else
-            AppendIndentedLine($"get;");
+            fn($"get;");
     }
 
-    public void AutoSet(Visibility visibility)
+    public void AutoSet(Visibility visibility, bool newLine = true, bool indented = true)
     {
+        Action<string> fn = newLine ? AppendIndentedLine : AppendIndented;
+        if (!indented)
+            fn = newLine ? AppendLine : Append;
+
         var vis = String(visibility);
         if (vis.Length > 0)
-            AppendIndentedLine($"{vis} set;");
+            fn($"{vis} set;");
         else
-            AppendIndentedLine($"set;");
+            fn($"set;");
     }
 
     public void NewLine() => AppendLine();
 
     public void MethodInvocation(string methodName, params string[] parameters)
     {
-        _output.Append($".{methodName}({string.Join(", ", parameters)})");
+        Append($".{methodName}({string.Join(", ", parameters)})");
     }
 
     public void Text(string text, bool indented)
@@ -153,12 +175,14 @@ public class GeneratorState
         if (indented)
             AppendIndented(text);
         else
-            _output.Append(text);
+            Append(text);
     }
 
-    private void AppendIndented(string value) => _output.Append($"{Indent()}{value}");
+    private void AppendIndented(string value) => Append($"{Indent()}{value}");
 
     private void AppendIndentedLine(string value) => AppendIndented($"{value}\n");
+
+    private void Append(string value) => _output.Append(value);
 
     private void AppendLine(string value = "") => _output.AppendLine(value);
 

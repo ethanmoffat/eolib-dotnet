@@ -155,6 +155,20 @@ public class ProtocolGenerator
             }
         }
 
+        // Generate ByteSize property. This property is required for parity with how the client handles certain packets.
+        // See CHEST_CLOSE packet and CharacterMapInfo struct.
+        state.Comment("Gets the size of the data that this object was deserialized from, or 0 for an object that was not deserialized.");
+        state.Property(GeneratorState.Visibility.Public, "int", "ByteSize", newLine: false);
+        state.Text(" ", indented: false);
+        state.BeginBlock(newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.AutoGet(GeneratorState.Visibility.None, newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.AutoSet(GeneratorState.Visibility.Private, newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.EndBlock(indented: false);
+        state.NewLine();
+
         // Generate properties. Most instructions are represented in a structure by a property.
         // A property may be a primitive type or a structure defined elsewhere in the protocol.
         foreach (var inst in instructions)
@@ -166,6 +180,7 @@ public class ProtocolGenerator
         }
 
         var flattenedInstructions = Flatten(instructions);
+        flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }));
 
         GenerateSerialize(state, instructions);
         state.NewLine();

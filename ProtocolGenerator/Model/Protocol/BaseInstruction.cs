@@ -23,11 +23,15 @@ public class BaseInstruction : IProtocolInstruction
             return;
 
         state.Comment(Comment);
-        state.Property(GeneratorState.Visibility.Public, TypeName, Name);
-        state.BeginBlock();
-        state.AutoGet(GeneratorState.Visibility.None);
-        state.AutoSet(GeneratorState.Visibility.None);
-        state.EndBlock();
+        state.Property(GeneratorState.Visibility.Public, TypeName, Name, newLine: false);
+        state.Text(" ", indented: false);
+        state.BeginBlock(newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.AutoGet(GeneratorState.Visibility.None, newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.AutoSet(GeneratorState.Visibility.None, newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.EndBlock(indented: false);
     }
 
     public virtual void GenerateSerialize(GeneratorState state) { }
