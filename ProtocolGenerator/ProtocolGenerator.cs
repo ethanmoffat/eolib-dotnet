@@ -264,13 +264,15 @@ public class ProtocolGenerator
         state.NewLine();
         state.NewLine();
 
-        if (instructions.Count(x => x.HasProperty) > 0)
+        var instructionsWithProperties = instructions.Where(x => x.HasProperty).ToList();
+
+        if (instructionsWithProperties.Count > 0)
         {
             state.Return(endStatement: false);
 
             var indentedFurther = false;
             var memberIndex = 0;
-            foreach (var inst in instructions.Where(x => x.HasProperty))
+            foreach (var inst in instructionsWithProperties)
             {
                 if (memberIndex == 1)
                 {
@@ -285,7 +287,7 @@ public class ProtocolGenerator
 
                 inst.GenerateEquals(state, "rhs");
 
-                if (memberIndex != instructions.Count - 1)
+                if (memberIndex != instructionsWithProperties.Count - 1)
                 {
                     state.NewLine();
                 }
