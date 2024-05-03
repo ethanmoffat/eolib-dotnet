@@ -34,7 +34,7 @@ public class BaseInstruction : IProtocolInstruction
         state.EndBlock(indented: false);
     }
 
-    public virtual void GenerateSerialize(GeneratorState state) { }
+    public virtual void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions) { }
 
     public virtual void GenerateDeserialize(GeneratorState state) { }
 

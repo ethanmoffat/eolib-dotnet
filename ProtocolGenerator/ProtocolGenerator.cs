@@ -100,7 +100,7 @@ public class ProtocolGenerator
             GeneratorState.Visibility.Public,
             inputType.IsInterface ? GeneratorState.ObjectType.Interface : GeneratorState.ObjectType.Class,
             inputType.Name,
-            string.IsNullOrWhiteSpace(inputType.BaseType) ? string.Empty : inputType.BaseType
+            string.IsNullOrWhiteSpace(inputType.BaseType) ? "ISerializable" : inputType.BaseType
         );
         state.BeginBlock();
         if (!inputType.IsInterface)
@@ -182,7 +182,7 @@ public class ProtocolGenerator
         var flattenedInstructions = Flatten(instructions);
         flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }));
 
-        GenerateSerialize(state, instructions);
+        GenerateSerialize(state, instructions, flattenedInstructions);
         state.NewLine();
 
         GenerateDeserialize(state, instructions);
@@ -197,16 +197,41 @@ public class ProtocolGenerator
         GenerateGetHashCode(state, typeName, flattenedInstructions);
     }
 
-    private static void GenerateSerialize(GeneratorState state, List<IProtocolInstruction> instructions)
+    private static void GenerateSerialize(GeneratorState state, List<IProtocolInstruction> instructions, IReadOnlyList<IProtocolInstruction> flattenedInstructions)
     {
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "void", "Serialize", new List<(string, string)> { ("EoWriter", "writer") }
         );
         state.BeginBlock();
+
+        var hasChunked = instructions.Any(x => x is ChunkedInstruction);
+
+        if (hasChunked)
+        {
+            state.Text("var oldStringSanitization = writer.StringSanitization;", indented: true);
+            state.NewLine();
+
+            state.Text("try", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+        }
+
         foreach (var inst in instructions)
         {
-            inst.GenerateSerialize(state);
+            inst.GenerateSerialize(state, flattenedInstructions);
         }
+
+        if (hasChunked)
+        {
+            state.EndBlock();
+            state.Text("finally", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+            state.Text("writer.StringSanitization = oldStringSanitization;", indented: true);
+            state.NewLine();
+            state.EndBlock();
+        }
+
         state.EndBlock();
     }
 
@@ -352,7 +377,7 @@ public class ProtocolGenerator
         for (int i = 0; i < instructions.Count; i++)
         {
             if (instructions[i].Instructions.Count > 0)
-                retList.AddRange(instructions[i].Instructions);
+                retList.AddRange(Flatten(instructions[i].Instructions));
             else
                 retList.Add(instructions[i]);
         }

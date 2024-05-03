@@ -13,7 +13,7 @@ namespace EOLib.Protocol.Net;
 /// <summary>
 /// Object representation of a packet in the EO network protocol
 /// </summary>
-public interface IPacket
+public interface IPacket : ISerializable
 {
     /// <summary>
     /// Gets the packet family associated with this packet
@@ -24,12 +24,6 @@ public interface IPacket
     /// Gets the packet action associated with this packet
     /// </summary>
     PacketAction Action { get; }
-
-    /// <summary>
-    /// Serializes this packet to the provided <see cref=""EOLib.Data.EoWriter""/>.
-    /// </summary>
-    /// <param name=""writer"">The writer that this packet will be serialized to</param>
-    void Serialize(EoWriter writer);
 }";
 
     private const string GlobalUsings = @"global using EOLib.Data;
