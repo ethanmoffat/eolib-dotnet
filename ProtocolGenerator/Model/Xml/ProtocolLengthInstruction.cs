@@ -11,11 +11,17 @@ public sealed class ProtocolLengthInstruction
     public string Type { get; set; }
 
     [XmlAttribute("optional")]
-    public bool Optional { get; set; }
+    public string OptionalRaw { get; set; }
+
+    [XmlIgnore]
+    public bool? Optional => bool.TryParse(OptionalRaw, out var res) ? res : null;
 
     [XmlElement("comment")]
     public string Comment { get; set; }
 
     [XmlAttribute("offset")]
-    public int Offset { get; set; }
+    public string OffsetRaw { get; set; }
+
+    [XmlIgnore]
+    public int? Offset => int.TryParse(OffsetRaw, out var res) ? res : null;
 }

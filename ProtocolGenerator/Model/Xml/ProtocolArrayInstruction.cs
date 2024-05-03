@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace ProtocolGenerator.Model.Xml;
@@ -14,14 +15,23 @@ public sealed class ProtocolArrayInstruction
     public string Length { get; set; }
 
     [XmlAttribute("optional")]
-    public bool Optional { get; set; }
+    public string OptionalRaw { get; set; }
+
+    [XmlIgnore]
+    public bool? Optional => bool.TryParse(OptionalRaw, out var res) ? res : null;
 
     [XmlElement("comment")]
     public string Comment { get; set; }
 
     [XmlAttribute("delimited")]
-    public bool Delimited { get; set; }
+    public string DelimitedRaw { get; set; }
+
+    [XmlIgnore]
+    public bool? Delimited => bool.TryParse(DelimitedRaw, out var res) ? res : null;
 
     [XmlAttribute("trailing-delimiter")]
-    public bool TrailingDelimiter { get; set; }
+    public string TrailingDelimiterRaw { get; set; }
+
+    [XmlIgnore]
+    public bool? TrailingDelimiter => bool.TryParse(TrailingDelimiterRaw, out var res) ? res : null;
 }

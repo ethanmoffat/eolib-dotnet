@@ -14,10 +14,16 @@ public sealed class ProtocolFieldInstruction
     public string Length { get; set; }
 
     [XmlAttribute("padded")]
-    public bool Padded { get; set; }
+    public string PaddedRaw { get; set; }
+
+    [XmlIgnore]
+    public bool? Padded => bool.TryParse(PaddedRaw, out var res) ? res : null;
 
     [XmlAttribute("optional")]
-    public bool Optional { get; set; }
+    public string OptionalRaw { get; set; }
+
+    [XmlIgnore]
+    public bool? Optional => bool.TryParse(OptionalRaw, out var res) ? res : null;
 
     [XmlElement("comment")]
     public string Comment { get; set; }
