@@ -7,13 +7,70 @@ public class ArrayInstruction : BaseInstruction
 {
     private readonly Xml.ProtocolArrayInstruction _xmlArrayInstruction;
 
-    public ArrayInstruction(Xml.ProtocolArrayInstruction xmlArrayInstruction)
+    public ArrayInstruction(Xml.ProtocolArrayInstruction xmlArrayInstruction, EnumTypeMapper mapper)
+        : base(mapper)
     {
         _xmlArrayInstruction = xmlArrayInstruction;
 
         Comment = _xmlArrayInstruction.Comment;
         Name = IdentifierConverter.SnakeCaseToPascalCase(_xmlArrayInstruction.Name);
         TypeName = TypeConverter.GetType(_xmlArrayInstruction.Type, isArray: true);
+        RawType = _xmlArrayInstruction.Type;
+
+        EoType = _xmlArrayInstruction.Type.ToEoType();
+    }
+
+    public override void GenerateProperty(GeneratorState state)
+    {
+        base.GenerateProperty(state);
+        state.Text(" = new();", indented: false);
+    }
+
+    public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        var delimited = _xmlArrayInstruction.Delimited.HasValue && _xmlArrayInstruction.Delimited.Value;
+        var trailingDelimiter = !_xmlArrayInstruction.TrailingDelimiter.HasValue || _xmlArrayInstruction.TrailingDelimiter.Value;
+
+        if (!string.IsNullOrWhiteSpace(_xmlArrayInstruction.Length))
+        {
+            var lenExpr = GetLengthExpression(_xmlArrayInstruction.Length, outerInstructions);
+            state.For("int ndx = 0", $"ndx < {lenExpr}", "ndx++");
+        }
+        else
+        {
+            state.For("int ndx = 0", $"ndx < {Name}.Count", "ndx++");
+        }
+        state.BeginBlock();
+
+        if (delimited && !trailingDelimiter)
+        {
+            state.Text("if (ndx > 0)", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+            addDelimiterByte(state);
+            state.EndBlock();
+        }
+
+        // Arrays are not optional when creating the property. The List<T> that gets generated will always be initialized.
+        // Arrays may be optional for purposes of serialize/deserialize, so it is set temporarily here.
+        Optional = _xmlArrayInstruction.Optional.HasValue && _xmlArrayInstruction.Optional.Value;
+        base.GenerateSerialize(state, outerInstructions);
+        Optional = false;
+
+        if (delimited && trailingDelimiter)
+        {
+            addDelimiterByte(state);
+        }
+
+        state.EndBlock();
+
+        static void addDelimiterByte(GeneratorState s)
+        {
+            s.Text("writer", indented: true);
+            s.MethodInvocation("AddByte", "0xFF");
+            s.Text(";", indented: false);
+            s.NewLine();
+        }
     }
 
     public override void GenerateToString(GeneratorState state)

@@ -45,4 +45,18 @@ public static class TypeConverter
 
         return ret;
     }
+
+    public static string GetTypeName(string inputType)
+    {
+        return inputType.Contains(":")
+            ? inputType.Split(':')[0]
+            : inputType;
+    }
+
+    public static string GetTypeSize(string inputType)
+    {
+        return inputType.Contains(":")
+            ? inputType.Split(':')[1]
+            : string.Empty;
+    }
 }

@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using ProtocolGenerator.Model.Xml;
+using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator;
 
@@ -46,14 +50,31 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
         context.ReportDiagnostic(Diagnostic.Create(ddForGeneration, Location.None, options.InputDirectory));
 
         var ddForFile = new DiagnosticDescriptor("EO0002", "EO Protocol File Info", "Generating protocol for: {0}", "EO.Generation", DiagnosticSeverity.Warning, true);
+
+        var enumTypeMapper = new EnumTypeMapper();
+        var parsedFiles = new List<(string Path, ProtocolSpec Spec)>();
         foreach (var file in filesFiltered)
+        {
+            var sourceTextString = file.Text.ToString();
+            using var ms = new MemoryStream(file.Text.Encoding.GetBytes(sourceTextString));
+
+            var serializer = new XmlSerializer(typeof(ProtocolSpec));
+            var model = (ProtocolSpec)serializer.Deserialize(ms);
+
+            foreach (var e in model.Enums)
+                enumTypeMapper.Register(e.Name, e.Type);
+
+            parsedFiles.Add((file.Path, model));
+        }
+
+        foreach (var file in parsedFiles)
         {
             context.ReportDiagnostic(Diagnostic.Create(ddForFile, Location.None, file.Path));
 
-            var generator = new ProtocolGenerator(options, file.Path, file.Text);
+            var generator = new ProtocolGenerator(options, file.Path, file.Spec);
             context.AddSource(
                 generator.HintName,
-                generator.Generate());
+                generator.Generate(enumTypeMapper));
         }
     }
 }

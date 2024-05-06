@@ -1,19 +1,36 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using ProtocolGenerator.Model.Xml;
+using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator.Model.Protocol;
 
-public class BaseInstruction : IProtocolInstruction
+public abstract class BaseInstruction : IProtocolInstruction
 {
+    private readonly EnumTypeMapper _enumTypeMapper;
+
     public string Name { get; protected set; } = string.Empty;
 
     public string TypeName { get; protected set; } = string.Empty;
 
+    public string RawType { get; protected set; } = string.Empty;
+
     public string Comment { get; protected set; } = string.Empty;
 
-    public bool HasProperty => !string.IsNullOrWhiteSpace(Name);
+    public string Length { get; protected set; } = string.Empty;
+
+    public bool Optional { get; protected set; }
+
+    public int Offset { get; protected set; }
+
+    public EoType EoType { get; protected set; } = EoType.None;
+
+    public virtual bool HasProperty => !string.IsNullOrWhiteSpace(Name);
 
     public List<IProtocolInstruction> Instructions { get; protected set; } = new();
+
+    protected BaseInstruction(EnumTypeMapper enumTypeMapper) => _enumTypeMapper = enumTypeMapper;
 
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
 
@@ -23,7 +40,7 @@ public class BaseInstruction : IProtocolInstruction
             return;
 
         state.Comment(Comment);
-        state.Property(GeneratorState.Visibility.Public, TypeName, Name, newLine: false);
+        state.Property(GeneratorState.Visibility.Public, $"{TypeName}{(Optional ? "?" : "")}", Name, newLine: false);
         state.Text(" ", indented: false);
         state.BeginBlock(newLine: false, indented: false);
         state.Text(" ", indented: false);
@@ -31,10 +48,76 @@ public class BaseInstruction : IProtocolInstruction
         state.Text(" ", indented: false);
         state.AutoSet(GeneratorState.Visibility.None, newLine: false, indented: false);
         state.Text(" ", indented: false);
-        state.EndBlock(indented: false);
+        state.EndBlock(newLine: false, indented: false);
     }
 
-    public virtual void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions) { }
+    public virtual void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        var isArray = this is ArrayInstruction;
+
+        var rawTypeName = TypeConverter.GetTypeName(RawType);
+        var isEnum = _enumTypeMapper.Has(enumName: rawTypeName);
+
+        if (Optional)
+        {
+            state.Text($"if ({Name}.HasValue)", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+        }
+
+        if (!isEnum && EoType.HasFlag(EoType.Struct))
+        {
+            state.Text(Name, indented: true);
+            if (isArray)
+                state.Text("[ndx]", indented: false);
+            state.MethodInvocation("Serialize", "writer");
+        }
+        else
+        {
+            var parameters = new List<string>(3)
+            {
+                // Serialize "Name", with extras:
+                // - If the field is an enum, it requires a cast to (int) prior to the call to Serialize
+                // - If the field is Optional, it is Nullable and requires a call to .Value
+                // - If the field is an array, it requires an index into the array for the single element
+                // - If the field is a boolean, it requires a conversion to int; 1 for true and 0 for false
+                // - If the field has an offset, it requires adjustment based on the provided offset value
+                string.Format($"{{0}}{Name}{{1}}{{2}}{{3}}{{4}}",
+                    $"{(isEnum ? "(int)" : string.Empty)}",
+                    $"{(Optional ? ".Value" : string.Empty)}",
+                    $"{(isArray ? "[ndx]" : string.Empty)}",
+                    $"{(EoType.HasFlag(EoType.Bool) ? " ? 1 : 0" : string.Empty)}",
+                    $"{(Offset != 0 ? $" + {-Offset}" : string.Empty)}"
+                )
+            };
+
+            if (EoType.HasFlag(EoType.Padded))
+            {
+                if (EoType.HasFlag(EoType.Fixed))
+                {
+                    parameters.Add(GetLengthExpression(Length, outerInstructions));
+                }
+
+                parameters.Add("true");
+            }
+            else if (EoType.HasFlag(EoType.Fixed))
+            {
+                parameters.Add(GetLengthExpression(Length, outerInstructions));
+            }
+
+            string methodCall = EoType.GetSerializeMethodName(TypeConverter.GetTypeSize(RawType));
+            state.Text("writer", indented: true);
+            state.MethodInvocation(methodCall, parameters.ToArray());
+        }
+
+        state.Text(";", indented: false);
+        state.NewLine();
+
+        if (Optional)
+        {
+            state.EndBlock();
+        }
+    }
 
     public virtual void GenerateDeserialize(GeneratorState state) { }
 
@@ -53,5 +136,30 @@ public class BaseInstruction : IProtocolInstruction
 
         state.Text($"{Name}", indented: false);
         state.MethodInvocation("Equals", $"{rhsIdentifier}.{Name}");
+    }
+
+    protected string NameOrContent(string instructionName, string instructionContent)
+    {
+        if (!HasProperty && !string.IsNullOrWhiteSpace(instructionContent))
+        {
+            if (EoType.HasFlag(EoType.String))
+                return $"\"{instructionContent}\"";
+            else
+                return instructionContent;
+        }
+
+        return IdentifierConverter.SnakeCaseToPascalCase(instructionName);
+    }
+
+    protected static string GetLengthExpression(string instructionLength, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        if (int.TryParse(instructionLength, out var _))
+            return instructionLength;
+
+        var convertedName = IdentifierConverter.SnakeCaseToPascalCase(instructionLength);
+        if (!outerInstructions.OfType<LengthInstruction>().Any(x => x.Name == convertedName))
+            throw new InvalidOperationException($"Could not find 'length' instruction with name {instructionLength}");
+
+        return convertedName;
     }
 }

@@ -178,6 +178,31 @@ public class GeneratorState
             Append(text);
     }
 
+    public void Switch(string value)
+    {
+        AppendIndentedLine($"switch ({value})");
+    }
+
+    public void Case(string caseValue)
+    {
+        AppendIndentedLine($"case {caseValue}:");
+    }
+
+    public void Default()
+    {
+        AppendIndentedLine("default:");
+    }
+
+    public void Break()
+    {
+        AppendIndentedLine("break;");
+    }
+
+    public void For(string init, string cond, string incr)
+    {
+        AppendIndentedLine($"for ({init}; {cond}; {incr})");
+    }
+
     private void AppendIndented(string value) => Append($"{Indent()}{value}");
 
     private void AppendIndentedLine(string value) => AppendIndented($"{value}\n");
