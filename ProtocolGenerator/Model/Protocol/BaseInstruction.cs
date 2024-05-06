@@ -8,29 +8,19 @@ namespace ProtocolGenerator.Model.Protocol;
 
 public abstract class BaseInstruction : IProtocolInstruction
 {
-    private readonly EnumTypeMapper _enumTypeMapper;
-
     public string Name { get; protected set; } = string.Empty;
 
-    public string TypeName { get; protected set; } = string.Empty;
-
-    public string RawType { get; protected set; } = string.Empty;
+    public TypeInfo TypeInfo { get; protected set; }
 
     public string Comment { get; protected set; } = string.Empty;
 
     public string Length { get; protected set; } = string.Empty;
 
-    public bool Optional { get; protected set; }
-
     public int Offset { get; protected set; }
-
-    public EoType EoType { get; protected set; } = EoType.None;
 
     public virtual bool HasProperty => !string.IsNullOrWhiteSpace(Name);
 
     public List<IProtocolInstruction> Instructions { get; protected set; } = new();
-
-    protected BaseInstruction(EnumTypeMapper enumTypeMapper) => _enumTypeMapper = enumTypeMapper;
 
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
 
@@ -40,7 +30,7 @@ public abstract class BaseInstruction : IProtocolInstruction
             return;
 
         state.Comment(Comment);
-        state.Property(GeneratorState.Visibility.Public, $"{TypeName}{(Optional ? "?" : "")}", Name, newLine: false);
+        state.Property(GeneratorState.Visibility.Public, $"{TypeInfo.PropertyType}", Name, newLine: false);
         state.Text(" ", indented: false);
         state.BeginBlock(newLine: false, indented: false);
         state.Text(" ", indented: false);
@@ -53,22 +43,17 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     public virtual void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
-        var isArray = this is ArrayInstruction;
-
-        var rawTypeName = TypeConverter.GetTypeName(RawType);
-        var isEnum = _enumTypeMapper.Has(enumName: rawTypeName);
-
-        if (Optional)
+        if (TypeInfo.Optional)
         {
             state.Text($"if ({Name}.HasValue)", indented: true);
             state.NewLine();
             state.BeginBlock();
         }
 
-        if (!isEnum && EoType.HasFlag(EoType.Struct))
+        if (!TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct))
         {
             state.Text(Name, indented: true);
-            if (isArray)
+            if (TypeInfo.IsArray)
                 state.Text("[ndx]", indented: false);
             state.MethodInvocation("Serialize", "writer");
         }
@@ -83,37 +68,36 @@ public abstract class BaseInstruction : IProtocolInstruction
                 // - If the field is a boolean, it requires a conversion to int; 1 for true and 0 for false
                 // - If the field has an offset, it requires adjustment based on the provided offset value
                 string.Format($"{{0}}{Name}{{1}}{{2}}{{3}}{{4}}",
-                    $"{(isEnum ? "(int)" : string.Empty)}",
-                    $"{(Optional ? ".Value" : string.Empty)}",
-                    $"{(isArray ? "[ndx]" : string.Empty)}",
-                    $"{(EoType.HasFlag(EoType.Bool) ? " ? 1 : 0" : string.Empty)}",
+                    $"{(TypeInfo.IsEnum ? "(int)" : string.Empty)}",
+                    $"{(TypeInfo.Optional ? ".Value" : string.Empty)}",
+                    $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
+                    $"{(TypeInfo.EoType.HasFlag(EoType.Bool) ? " ? 1 : 0" : string.Empty)}",
                     $"{(Offset != 0 ? $" + {-Offset}" : string.Empty)}"
                 )
             };
 
-            if (EoType.HasFlag(EoType.Padded))
+            if (TypeInfo.EoType.HasFlag(EoType.Padded))
             {
-                if (EoType.HasFlag(EoType.Fixed))
+                if (TypeInfo.EoType.HasFlag(EoType.Fixed))
                 {
                     parameters.Add(GetLengthExpression(Length, outerInstructions));
                 }
 
                 parameters.Add("true");
             }
-            else if (EoType.HasFlag(EoType.Fixed))
+            else if (TypeInfo.EoType.HasFlag(EoType.Fixed))
             {
                 parameters.Add(GetLengthExpression(Length, outerInstructions));
             }
 
-            string methodCall = EoType.GetSerializeMethodName(TypeConverter.GetTypeSize(RawType));
             state.Text("writer", indented: true);
-            state.MethodInvocation(methodCall, parameters.ToArray());
+            state.MethodInvocation(TypeInfo.GetSerializeMethodName(), parameters.ToArray());
         }
 
         state.Text(";", indented: false);
         state.NewLine();
 
-        if (Optional)
+        if (TypeInfo.Optional)
         {
             state.EndBlock();
         }
@@ -142,7 +126,7 @@ public abstract class BaseInstruction : IProtocolInstruction
     {
         if (!HasProperty && !string.IsNullOrWhiteSpace(instructionContent))
         {
-            if (EoType.HasFlag(EoType.String))
+            if (TypeInfo.EoType.HasFlag(EoType.String))
                 return $"\"{instructionContent}\"";
             else
                 return instructionContent;

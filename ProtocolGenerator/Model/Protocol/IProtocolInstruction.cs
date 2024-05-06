@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator.Model.Protocol;
 
 public interface IProtocolInstruction
 {
-    string TypeName { get; }
+    TypeInfo TypeInfo { get; }
 
     string Name { get; }
 

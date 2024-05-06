@@ -6,10 +6,9 @@ public class DummyInstruction : BaseInstruction
 {
     public override bool HasProperty => false;
 
-    public DummyInstruction(Xml.ProtocolDummyInstruction xmlDummyInstruction, EnumTypeMapper mapper)
-        : base(mapper)
+    public DummyInstruction(Xml.ProtocolDummyInstruction xmlDummyInstruction)
     {
-        EoType = xmlDummyInstruction.Type.ToEoType();
+        TypeInfo = new TypeInfo(xmlDummyInstruction.Type);
         Name = NameOrContent(string.Empty, xmlDummyInstruction.Content);
     }
 }

@@ -5,7 +5,11 @@ namespace ProtocolGenerator.Types;
 
 public class EnumTypeMapper
 {
+    public static EnumTypeMapper Instance { get; } = new EnumTypeMapper();
+
     private readonly Dictionary<string, string> _types = new();
+
+    private EnumTypeMapper() { }
 
     public bool Has(string enumName) => _types.ContainsKey(enumName);
 

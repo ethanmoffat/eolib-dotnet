@@ -51,7 +51,6 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
 
         var ddForFile = new DiagnosticDescriptor("EO0002", "EO Protocol File Info", "Generating protocol for: {0}", "EO.Generation", DiagnosticSeverity.Warning, true);
 
-        var enumTypeMapper = new EnumTypeMapper();
         var parsedFiles = new List<(string Path, ProtocolSpec Spec)>();
         foreach (var file in filesFiltered)
         {
@@ -62,7 +61,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
             var model = (ProtocolSpec)serializer.Deserialize(ms);
 
             foreach (var e in model.Enums)
-                enumTypeMapper.Register(e.Name, e.Type);
+                EnumTypeMapper.Instance.Register(e.Name, e.Type);
 
             parsedFiles.Add((file.Path, model));
         }
@@ -74,7 +73,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
             var generator = new ProtocolGenerator(options, file.Path, file.Spec);
             context.AddSource(
                 generator.HintName,
-                generator.Generate(enumTypeMapper));
+                generator.Generate());
         }
     }
 }

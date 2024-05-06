@@ -5,9 +5,6 @@ namespace ProtocolGenerator.Model.Protocol;
 
 public class BreakInstruction : BaseInstruction
 {
-    public BreakInstruction(EnumTypeMapper mapper)
-        : base(mapper) { }
-
     public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
         state.Text("writer", indented: true);

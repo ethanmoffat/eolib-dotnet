@@ -7,17 +7,15 @@ public class ArrayInstruction : BaseInstruction
 {
     private readonly Xml.ProtocolArrayInstruction _xmlArrayInstruction;
 
-    public ArrayInstruction(Xml.ProtocolArrayInstruction xmlArrayInstruction, EnumTypeMapper mapper)
-        : base(mapper)
+    public ArrayInstruction(Xml.ProtocolArrayInstruction xmlArrayInstruction)
     {
         _xmlArrayInstruction = xmlArrayInstruction;
 
-        Comment = _xmlArrayInstruction.Comment;
-        Name = IdentifierConverter.SnakeCaseToPascalCase(_xmlArrayInstruction.Name);
-        TypeName = TypeConverter.GetType(_xmlArrayInstruction.Type, isArray: true);
-        RawType = _xmlArrayInstruction.Type;
+        var optional = _xmlArrayInstruction.Optional.HasValue && _xmlArrayInstruction.Optional.Value;
+        TypeInfo = new TypeInfo(_xmlArrayInstruction.Type, isArray: true, optional: optional);
 
-        EoType = _xmlArrayInstruction.Type.ToEoType();
+        Name = IdentifierConverter.SnakeCaseToPascalCase(_xmlArrayInstruction.Name);
+        Comment = _xmlArrayInstruction.Comment;
     }
 
     public override void GenerateProperty(GeneratorState state)
@@ -51,11 +49,7 @@ public class ArrayInstruction : BaseInstruction
             state.EndBlock();
         }
 
-        // Arrays are not optional when creating the property. The List<T> that gets generated will always be initialized.
-        // Arrays may be optional for purposes of serialize/deserialize, so it is set temporarily here.
-        Optional = _xmlArrayInstruction.Optional.HasValue && _xmlArrayInstruction.Optional.Value;
         base.GenerateSerialize(state, outerInstructions);
-        Optional = false;
 
         if (delimited && trailingDelimiter)
         {

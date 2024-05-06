@@ -53,7 +53,7 @@ public class GeneratorState
         AppendIndented($"{String(visibility)} {String(objectType)} {typeName}");
         if (!string.IsNullOrWhiteSpace(baseType))
         {
-            var convertedType = TypeConverter.GetType(baseType);
+            var convertedType = TypeInfo.GetDotNetType(baseType);
             if (!string.IsNullOrWhiteSpace(convertedType) && convertedType != "int")
             {
                 AppendLine($" : {convertedType}");

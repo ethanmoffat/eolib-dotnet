@@ -8,18 +8,17 @@ public class LengthInstruction : BaseInstruction
 
     public override bool HasProperty => !string.IsNullOrWhiteSpace(_xmlLengthInstruction.Name);
 
-    public LengthInstruction(Xml.ProtocolLengthInstruction xmlLengthInstruction, EnumTypeMapper mapper)
-        : base(mapper)
+    public LengthInstruction(Xml.ProtocolLengthInstruction xmlLengthInstruction)
     {
         _xmlLengthInstruction = xmlLengthInstruction;
 
-        Comment = _xmlLengthInstruction.Comment;
-        TypeName = TypeConverter.GetType(_xmlLengthInstruction.Type, isArray: false);
-        RawType = _xmlLengthInstruction.Type;
+        TypeInfo = new TypeInfo(
+            _xmlLengthInstruction.Type,
+            optional: _xmlLengthInstruction.Optional.HasValue && _xmlLengthInstruction.Optional.Value
+        );
 
-        EoType = _xmlLengthInstruction.Type.ToEoType();
         Name = NameOrContent(_xmlLengthInstruction.Name, string.Empty);
-        Optional = _xmlLengthInstruction.Optional.HasValue && _xmlLengthInstruction.Optional.Value;
+        Comment = _xmlLengthInstruction.Comment;
 
         Offset = _xmlLengthInstruction.Offset ?? 0;
     }

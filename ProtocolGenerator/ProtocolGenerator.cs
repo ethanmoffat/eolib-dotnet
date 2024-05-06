@@ -6,7 +6,6 @@ using System.Text;
 using Microsoft.CodeAnalysis.Text;
 using ProtocolGenerator.Model.Protocol;
 using ProtocolGenerator.Model.Xml;
-using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator;
 
@@ -51,7 +50,7 @@ public class ProtocolGenerator
         _fullSpec = fullSpec;
     }
 
-    public SourceText Generate(EnumTypeMapper enumTypeMapper)
+    public SourceText Generate()
     {
         var allSpecs = _fullSpec.Enums.Concat<object>(_fullSpec.Structs).Concat(_fullSpec.Packets);
 
@@ -63,9 +62,9 @@ public class ProtocolGenerator
             if (type is ProtocolEnum e)
                 Generate(e, state);
             else if (type is ProtocolStruct s)
-                Generate(s, enumTypeMapper, state);
+                Generate(s, state);
             else if (type is ProtocolPacket p)
-                Generate(p, enumTypeMapper, state);
+                Generate(p, state);
             else
                 continue;
 
@@ -86,7 +85,7 @@ public class ProtocolGenerator
         state.EndBlock();
     }
 
-    private void Generate(ProtocolStruct inputType, EnumTypeMapper enumTypeMapper, GeneratorState state)
+    private void Generate(ProtocolStruct inputType, GeneratorState state)
     {
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
@@ -103,14 +102,13 @@ public class ProtocolGenerator
             GenerateStructureImplementation(
                 state,
                 inputType.Name,
-            inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(x, enumTypeMapper)).ToList(),
-                enumTypeMapper
+            inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList()
             );
         }
         state.EndBlock();
     }
 
-    private void Generate(ProtocolPacket inputType, EnumTypeMapper enumTypeMapper, GeneratorState state)
+    private void Generate(ProtocolPacket inputType, GeneratorState state)
     {
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
@@ -141,13 +139,12 @@ public class ProtocolGenerator
         GenerateStructureImplementation(
             state,
             typeName,
-            inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(x, enumTypeMapper)).ToList(),
-            enumTypeMapper
+            inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList()
         );
         state.EndBlock();
     }
 
-    private void GenerateStructureImplementation(GeneratorState state, string typeName, List<IProtocolInstruction> instructions, EnumTypeMapper enumTypeMapper)
+    private void GenerateStructureImplementation(GeneratorState state, string typeName, List<IProtocolInstruction> instructions)
     {
         // Generate nested types. Each switch case is represented by a nested structure with data relevant to the switch case.
         // The switch case as a member is represented by an interface, with each "case" being a different implementation of that interface.
@@ -155,7 +152,7 @@ public class ProtocolGenerator
         {
             foreach (var nestedType in inst.GetNestedTypes())
             {
-                Generate(nestedType, enumTypeMapper, state);
+                Generate(nestedType, state);
                 state.NewLine();
             }
         }
@@ -188,7 +185,7 @@ public class ProtocolGenerator
         }
 
         var flattenedInstructions = Flatten(instructions);
-        flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }, enumTypeMapper));
+        flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }));
 
         GenerateSerialize(state, instructions, flattenedInstructions);
         state.NewLine();

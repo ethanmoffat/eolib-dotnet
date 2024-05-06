@@ -9,12 +9,11 @@ public class SwitchInstruction : BaseInstruction
     private readonly Xml.ProtocolSwitchInstruction _xmlSwitchInstruction;
     private readonly string _fieldName;
 
-    public SwitchInstruction(Xml.ProtocolSwitchInstruction xmlSwitchInstruction, EnumTypeMapper mapper)
-        : base(mapper)
+    public SwitchInstruction(Xml.ProtocolSwitchInstruction xmlSwitchInstruction)
     {
         _xmlSwitchInstruction = xmlSwitchInstruction;
 
-        TypeName = GetSwitchInterfaceType(_xmlSwitchInstruction.Field);
+        TypeInfo = new TypeInfo(GetSwitchInterfaceType(_xmlSwitchInstruction.Field));
         Name = GetSwitchInterfaceMemberName(_xmlSwitchInstruction.Field);
         _fieldName = IdentifierConverter.SnakeCaseToPascalCase(_xmlSwitchInstruction.Field);
     }
@@ -25,7 +24,7 @@ public class SwitchInstruction : BaseInstruction
         {
             new Xml.ProtocolStruct
             {
-                Name = TypeName,
+                Name = TypeInfo.PropertyType,
                 Instructions = new List<object>(),
                 IsInterface = true,
             }
@@ -41,7 +40,7 @@ public class SwitchInstruction : BaseInstruction
                 Name = GetSwitchCaseName(_xmlSwitchInstruction.Field, c.Value, c.Default),
                 Comment = c.Comment,
                 Instructions = c.Instructions,
-                BaseType = TypeName,
+                BaseType = TypeInfo.PropertyType,
             });
         }
 
@@ -50,7 +49,7 @@ public class SwitchInstruction : BaseInstruction
 
     public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
-        var typeNameForSwitchedField = FindTypeNameForField(outerInstructions);
+        var typeNameForSwitchedField = FindTypeNameForField(outerInstructions).PropertyType;
 
         state.Switch(_fieldName);
         state.BeginBlock();
@@ -92,9 +91,9 @@ public class SwitchInstruction : BaseInstruction
         state.EndBlock();
     }
 
-    private string FindTypeNameForField(IReadOnlyList<IProtocolInstruction> outerInstructions)
+    private TypeInfo FindTypeNameForField(IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
-        return outerInstructions.Single(x => x.Name == _fieldName).TypeName;
+        return outerInstructions.Single(x => x.Name == _fieldName).TypeInfo;
     }
 
     private static string GetSwitchInterfaceType(string fieldName)

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator.Model.Protocol;
@@ -9,22 +8,19 @@ public class FieldInstruction : BaseInstruction
 
     public override bool HasProperty => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Name);
 
-    public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction, EnumTypeMapper mapper)
-        : base(mapper)
+    public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction)
     {
         _xmlFieldInstruction = xmlFieldInstruction;
 
-        Comment = _xmlFieldInstruction.Comment;
-        TypeName = TypeConverter.GetType(_xmlFieldInstruction.Type, isArray: false);
-        RawType = _xmlFieldInstruction.Type;
-
-        var padded = _xmlFieldInstruction.Padded.HasValue && _xmlFieldInstruction.Padded.Value;
-        EoType = mapper.Has(TypeConverter.GetTypeName(RawType))
-            ? mapper[TypeConverter.GetTypeName(RawType)].ToEoType()
-            : _xmlFieldInstruction.Type.ToEoType(padded, !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Length));
+        TypeInfo = new TypeInfo(
+            _xmlFieldInstruction.Type,
+            optional: _xmlFieldInstruction.Optional.HasValue && _xmlFieldInstruction.Optional.Value,
+            padded: _xmlFieldInstruction.Padded.HasValue && _xmlFieldInstruction.Padded.Value,
+            @fixed: !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Length)
+        );
 
         Name = NameOrContent(_xmlFieldInstruction.Name, _xmlFieldInstruction.Content);
-        Optional = _xmlFieldInstruction.Optional.HasValue && _xmlFieldInstruction.Optional.Value;
+        Comment = _xmlFieldInstruction.Comment;
 
         Length = _xmlFieldInstruction.Length;
     }
