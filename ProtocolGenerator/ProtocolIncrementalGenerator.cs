@@ -61,7 +61,10 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
             var model = (ProtocolSpec)serializer.Deserialize(ms);
 
             foreach (var e in model.Enums)
-                EnumTypeMapper.Instance.Register(e.Name, e.Type);
+                TypeMapper.Instance.RegisterEnum(e.Name, e.Type);
+
+            foreach (var s in model.Structs)
+                TypeMapper.Instance.RegisterStruct(s.Name, s);
 
             parsedFiles.Add((file.Path, model));
         }
