@@ -103,7 +103,84 @@ public abstract class BaseInstruction : IProtocolInstruction
         }
     }
 
-    public virtual void GenerateDeserialize(GeneratorState state) { }
+    public virtual void GenerateDeserialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        if (TypeInfo.Optional)
+        {
+            state.Text($"if (reader.Remaining > 0)", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+        }
+
+        if (TypeInfo.IsArray)
+        {
+            state.Text($"{Name}", indented: true);
+            state.MethodInvocation("Add", GetDefaultValueForDeserialize());
+            state.Text(";", indented: false);
+            state.NewLine();
+        }
+
+        if (!TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct))
+        {
+            state.Text(Name, indented: true);
+            if (TypeInfo.IsArray)
+            {
+                state.Text("[ndx]", indented: false);
+            }
+            state.MethodInvocation("Deserialize", "reader");
+        }
+        else
+        {
+            var parameters = new List<string>(2);
+            if (TypeInfo.EoType.HasFlag(EoType.Padded))
+            {
+                if (TypeInfo.EoType.HasFlag(EoType.Fixed))
+                {
+                    parameters.Add(GetLengthExpression(Length, outerInstructions));
+                }
+
+                parameters.Add("true");
+            }
+            else if (TypeInfo.EoType.HasFlag(EoType.Blob))
+            {
+                parameters.Add("reader.Remaining");
+            }
+            else if (TypeInfo.EoType.HasFlag(EoType.Fixed))
+            {
+                parameters.Add(GetLengthExpression(Length, outerInstructions));
+            }
+
+            // Deserialize to "Name", with extras:
+            // - If the field is an array, it requires an index into the array for the single element
+            // - If the field is an enum, the result of the read requires a cast from int
+            // - If the field is a boolean, it requires a conversion to bool; zero for false and nonzero for true
+            // - If the field has an offset, it requires adjustment based on the provided offset value
+            // - If the field doesn't have an associated property, ignore the value
+            var preDeserialize = HasProperty
+                ? string.Format($"{Name}{{0}} = {{1}}",
+                    $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
+                    $"{(TypeInfo.IsEnum ? $"({TypeInfo.PropertyType})" : string.Empty)}")
+                : string.Empty;
+
+            var postDeserialize = HasProperty
+                ? string.Format("{0}{1}",
+                    $"{(TypeInfo.EoType.HasFlag(EoType.Bool) ? " != 0" : string.Empty)}",
+                    $"{(Offset != 0 ? $" + {Offset}" : string.Empty)}")
+                : string.Empty;
+
+            state.Text($"{preDeserialize}reader", indented: true);
+            state.MethodInvocation(TypeInfo.GetDeserializeMethodName(), parameters.ToArray());
+            state.Text(postDeserialize, indented: false);
+        }
+
+        state.Text(";", indented: false);
+        state.NewLine();
+
+        if (TypeInfo.Optional)
+        {
+            state.EndBlock();
+        }
+    }
 
     public virtual void GenerateToString(GeneratorState state)
     {
@@ -145,5 +222,18 @@ public abstract class BaseInstruction : IProtocolInstruction
             throw new InvalidOperationException($"Could not find 'length' instruction with name {instructionLength}");
 
         return convertedName;
+    }
+
+    private string GetDefaultValueForDeserialize()
+    {
+        if (TypeMapper.Instance.HasEnum(TypeInfo.ProtocolTypeName))
+            return $"({TypeInfo.ProtocolTypeName})0";
+
+        if (TypeMapper.Instance.HasStruct(TypeInfo.ProtocolTypeName))
+            return $"new {TypeInfo.ProtocolTypeName}()";
+
+        return TypeInfo.EoType.HasFlag(EoType.String)
+            ? "string.Empty"
+            : "0";
     }
 }

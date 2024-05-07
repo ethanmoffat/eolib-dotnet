@@ -194,7 +194,7 @@ public class ProtocolGenerator
         GenerateSerialize(state, instructions, flattenedInstructions);
         state.NewLine();
 
-        GenerateDeserialize(state, instructions);
+        GenerateDeserialize(state, instructions, flattenedInstructions);
         state.NewLine();
 
         GenerateToString(state, typeName, flattenedInstructions);
@@ -244,16 +244,47 @@ public class ProtocolGenerator
         state.EndBlock();
     }
 
-    private static void GenerateDeserialize(GeneratorState state, List<IProtocolInstruction> instructions)
+    private static void GenerateDeserialize(GeneratorState state, List<IProtocolInstruction> instructions, IReadOnlyList<IProtocolInstruction> flattenedInstructions)
     {
         state.MethodDeclaration(
             GeneratorState.Visibility.Public, "void", "Deserialize", new List<(string, string)> { ("EoReader", "reader") }
         );
         state.BeginBlock();
+
+        var hasChunked = instructions.Any(x => x is ChunkedInstruction);
+
+        if (hasChunked)
+        {
+            state.Text("var oldChunkedReadingMode = reader.ChunkedReadingMode;", indented: true);
+            state.NewLine();
+
+            state.Text("try", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+        }
+
+        state.Text("var readerStartPosition = reader.Position;", indented: true);
+        state.NewLine();
+
         foreach (var inst in instructions)
         {
-            inst.GenerateDeserialize(state);
+            inst.GenerateDeserialize(state, flattenedInstructions);
         }
+
+        state.Text("ByteSize = reader.Position - readerStartPosition;", indented: true);
+        state.NewLine();
+
+        if (hasChunked)
+        {
+            state.EndBlock();
+            state.Text("finally", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+            state.Text("reader.ChunkedReadingMode = oldChunkedReadingMode;", indented: true);
+            state.NewLine();
+            state.EndBlock();
+        }
+
         state.EndBlock();
     }
 

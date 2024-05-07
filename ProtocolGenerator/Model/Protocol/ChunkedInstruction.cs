@@ -45,4 +45,16 @@ public class ChunkedInstruction : BaseInstruction
         state.Text("writer.StringSanitization = false;", indented: true);
         state.NewLine();
     }
+
+    public override void GenerateDeserialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        state.Text("reader.ChunkedReadingMode = true;", indented: true);
+        state.NewLine();
+
+        foreach (var inst in Instructions)
+            inst.GenerateDeserialize(state, outerInstructions);
+
+        state.Text("reader.ChunkedReadingMode = false;", indented: true);
+        state.NewLine();
+    }
 }

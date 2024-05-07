@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ProtocolGenerator.Types;
 
@@ -65,6 +66,68 @@ public class ArrayInstruction : BaseInstruction
             s.Text(";", indented: false);
             s.NewLine();
         }
+    }
+
+    public override void GenerateDeserialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        var delimited = _xmlArrayInstruction.Delimited.HasValue && _xmlArrayInstruction.Delimited.Value;
+
+        string loopCondition;
+        if (!string.IsNullOrWhiteSpace(_xmlArrayInstruction.Length))
+        {
+            var lenExpr = GetLengthExpression(_xmlArrayInstruction.Length, outerInstructions);
+            loopCondition = $"ndx < {lenExpr}";
+        }
+        else if (!delimited && _xmlArrayInstruction.IsChunked)
+        {
+            try
+            {
+                var typeSize = TypeInfo.CalculateByteSize();
+                loopCondition = typeSize > 1
+                    ? $"ndx < reader.Remaining / {typeSize}"
+                    : "reader.Remaining > 0";
+            }
+            catch
+            {
+                loopCondition = "reader.Remaining > 0";
+            }
+        }
+        else
+        {
+            loopCondition = "reader.Remaining > 0";
+        }
+
+        state.For("int ndx = 0", loopCondition, "ndx++");
+        state.BeginBlock();
+
+        base.GenerateDeserialize(state, outerInstructions);
+
+        if (delimited && _xmlArrayInstruction.IsChunked)
+        {
+            var trailingDelimiter = !_xmlArrayInstruction.TrailingDelimiter.HasValue || _xmlArrayInstruction.TrailingDelimiter.Value;
+            if (!trailingDelimiter)
+            {
+                if (string.IsNullOrWhiteSpace(_xmlArrayInstruction.Length))
+                    throw new InvalidOperationException($"delimited arrays with trailing-delimiter=false must have a length (array {Name})");
+
+                var lenExpr = GetLengthExpression(_xmlArrayInstruction.Length, outerInstructions);
+                state.Text($"if (ndx + 1 < {lenExpr})", indented: true);
+                state.NewLine();
+                state.BeginBlock();
+            }
+
+            state.Text("reader", indented: true);
+            state.MethodInvocation("NextChunk");
+            state.Text(";", indented: false);
+            state.NewLine();
+
+            if (!trailingDelimiter)
+            {
+                state.EndBlock();
+            }
+        }
+
+        state.EndBlock();
     }
 
     public override void GenerateToString(GeneratorState state)

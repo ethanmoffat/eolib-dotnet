@@ -21,7 +21,7 @@ public interface IProtocolInstruction
 
     void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions);
 
-    void GenerateDeserialize(GeneratorState state);
+    void GenerateDeserialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions);
 
     void GenerateToString(GeneratorState state);
 

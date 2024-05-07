@@ -15,7 +15,7 @@ public static class ProtocolInstructionFactory
             ProtocolDummyInstruction pdi => new DummyInstruction(pdi),
             ProtocolSwitchInstruction psi => new SwitchInstruction(psi),
             ProtocolChunkedInstruction pci => new ChunkedInstruction(pci),
-            ProtocolBreakInstruction => new BreakInstruction(),
+            ProtocolBreakInstruction pbi => new BreakInstruction(pbi),
             _ => throw new ArgumentException("Unexpected instruction type in protocol xml"),
         };
     }

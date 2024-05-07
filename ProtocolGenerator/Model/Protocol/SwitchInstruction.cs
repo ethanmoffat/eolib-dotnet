@@ -91,6 +91,45 @@ public class SwitchInstruction : BaseInstruction
         state.EndBlock();
     }
 
+    public override void GenerateDeserialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
+    {
+        var typeNameForSwitchedField = FindTypeNameForField(outerInstructions).PropertyType;
+
+        state.Switch(_fieldName);
+        state.BeginBlock();
+
+        foreach (var c in _xmlSwitchInstruction.Cases)
+        {
+            if (c.Instructions.Count == 0)
+                continue;
+
+            if (c.Default)
+            {
+                state.Default();
+            }
+            else
+            {
+                if (int.TryParse(c.Value, out var _))
+                    state.Case($"({typeNameForSwitchedField}){c.Value}");
+                else
+                    state.Case($"{typeNameForSwitchedField}.{c.Value}");
+            }
+
+            state.IncreaseIndent();
+
+            var caseObjectType = GetSwitchCaseName(_xmlSwitchInstruction.Field, c.Value, c.Default);
+            state.Text($"{Name} = new {caseObjectType}();", indented: true);
+            state.NewLine();
+            state.Text($"{Name}.Deserialize(reader);", indented: true);
+            state.NewLine();
+
+            state.Break();
+            state.DecreaseIndent();
+        }
+
+        state.EndBlock();
+    }
+
     private TypeInfo FindTypeNameForField(IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
         return outerInstructions.Single(x => x.Name == _fieldName).TypeInfo;
