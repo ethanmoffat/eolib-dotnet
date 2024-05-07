@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace ProtocolGenerator.Model.Xml;
 
-public sealed class ProtocolFieldInstruction
+public sealed class ProtocolFieldInstruction : ProtocolBaseInstruction
 {
     [XmlAttribute("name")]
     public string Name { get; set; }

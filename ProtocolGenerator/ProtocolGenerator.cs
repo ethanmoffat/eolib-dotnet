@@ -87,6 +87,8 @@ public class ProtocolGenerator
 
     private void Generate(ProtocolStruct inputType, GeneratorState state)
     {
+        ApplyChunked(inputType.Instructions);
+
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
 
@@ -110,6 +112,8 @@ public class ProtocolGenerator
 
     private void Generate(ProtocolPacket inputType, GeneratorState state)
     {
+        ApplyChunked(inputType.Instructions);
+
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
 
@@ -387,5 +391,29 @@ public class ProtocolGenerator
                 retList.Add(instructions[i]);
         }
         return retList;
+    }
+
+    private static void ApplyChunked(IReadOnlyList<object> instructions, bool isChunked = false)
+    {
+        foreach (var inst in instructions)
+        {
+            if (inst is ProtocolBaseInstruction baseInst)
+            {
+                baseInst.IsChunked = isChunked;
+            }
+
+            if (inst is ProtocolChunkedInstruction pci)
+            {
+                ApplyChunked(pci.Instructions, true);
+            }
+            else if (inst is ProtocolSwitchInstruction psi)
+            {
+                foreach (var c in psi.Cases)
+                {
+                    c.IsChunked = isChunked;
+                    ApplyChunked(c.Instructions, isChunked);
+                }
+            }
+        }
     }
 }

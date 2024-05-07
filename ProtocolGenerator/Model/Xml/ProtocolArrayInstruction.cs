@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace ProtocolGenerator.Model.Xml;
 
-public sealed class ProtocolArrayInstruction
+public sealed class ProtocolArrayInstruction : ProtocolBaseInstruction
 {
     [XmlAttribute("name")]
     public string Name { get; set; }

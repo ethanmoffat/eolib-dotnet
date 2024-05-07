@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 
 namespace ProtocolGenerator.Model.Xml;
 
-public sealed class ProtocolChunkedInstruction
+public sealed class ProtocolChunkedInstruction : ProtocolBaseInstruction
 {
     [XmlElement("field", typeof(ProtocolFieldInstruction))]
     [XmlElement("array", typeof(ProtocolArrayInstruction))]

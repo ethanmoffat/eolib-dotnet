@@ -2,7 +2,7 @@ using System.Xml.Serialization;
 
 namespace ProtocolGenerator.Model.Xml;
 
-public sealed class ProtocolDummyInstruction
+public sealed class ProtocolDummyInstruction : ProtocolBaseInstruction
 {
     [XmlAttribute("type")]
     public string Type { get; set; }
