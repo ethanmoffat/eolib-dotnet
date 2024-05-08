@@ -9,9 +9,4 @@ public interface ISequenceStart
     /// Gets the sequence start value
     /// </summary>
     int Value { get; }
-
-    /// <summary>
-    /// Gets an instance of <see cref="ISequenceStart" /> with a value of <c>0</c>
-    /// </summary>
-    static ISequenceStart Zero { get; } = new ZeroSequence();
 }
