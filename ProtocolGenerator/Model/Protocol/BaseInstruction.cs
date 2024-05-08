@@ -187,7 +187,7 @@ public abstract class BaseInstruction : IProtocolInstruction
         if (!HasProperty)
             return;
 
-        state.Text($"$\"{{nameof({Name})}}={{{Name}}}\"", indented: false);
+        state.Text($"$\"{{nameof({Name})}}={{{(TypeInfo.IsNullable ? $"({Name} == null ? \"<null>\" : \"{{{Name}}}\")" : Name)}}}\"", indented: false);
     }
 
     public virtual void GenerateEquals(GeneratorState state, string rhsIdentifier)
@@ -195,7 +195,7 @@ public abstract class BaseInstruction : IProtocolInstruction
         if (!HasProperty)
             return;
 
-        state.Text($"{Name}", indented: false);
+        state.Text($"{Name}{(TypeInfo.IsNullable ? $" == null ? {rhsIdentifier}.{Name} == null : {Name}" : string.Empty)}", indented: false);
         state.MethodInvocation("Equals", $"{rhsIdentifier}.{Name}");
     }
 

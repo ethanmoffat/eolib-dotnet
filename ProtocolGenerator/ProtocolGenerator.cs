@@ -394,9 +394,9 @@ public class ProtocolGenerator
 
             foreach (var inst in instructions.Where(x => x.HasProperty))
             {
-                state.Text($"hash = hash * 23 + {inst.Name}", indented: true);
+                state.Text($"hash = hash * 23 + {inst.Name}{(inst.TypeInfo.IsNullable ? "?" : string.Empty)}", indented: true);
                 state.MethodInvocation("GetHashCode");
-                state.Text(";", indented: false);
+                state.Text($"{(inst.TypeInfo.IsNullable ? " ?? 0" : string.Empty)};", indented: false);
                 state.NewLine();
             }
 

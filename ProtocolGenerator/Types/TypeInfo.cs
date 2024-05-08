@@ -20,6 +20,8 @@ public class TypeInfo
 
     public bool IsEnum { get; }
 
+    public bool IsNullable { get; }
+
     public TypeInfo(string rawType, bool isArray = false, bool optional = false, bool padded = false, bool @fixed = false)
     {
         ProtocolTypeName = GetTypeName(rawType);
@@ -31,6 +33,8 @@ public class TypeInfo
         IsArray = isArray;
         Optional = optional;
         IsEnum = TypeMapper.Instance.HasEnum(ProtocolTypeName);
+
+        IsNullable = PropertyType.Contains("List") || PropertyType.Contains("string") || PropertyType.Contains("[]") || PropertyType.Contains("?");
     }
 
     public string GetSerializeMethodName()
