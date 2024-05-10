@@ -20,6 +20,8 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     public virtual bool HasProperty => !string.IsNullOrWhiteSpace(Name);
 
+    protected virtual bool IsReadOnly => false;
+
     public List<IProtocolInstruction> Instructions { get; protected set; } = new();
 
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
@@ -29,16 +31,7 @@ public abstract class BaseInstruction : IProtocolInstruction
         if (!HasProperty)
             return;
 
-        state.Comment(Comment);
-        state.Property(GeneratorState.Visibility.Public, $"{TypeInfo.PropertyType}", Name, newLine: false);
-        state.Text(" ", indented: false);
-        state.BeginBlock(newLine: false, indented: false);
-        state.Text(" ", indented: false);
-        state.AutoGet(GeneratorState.Visibility.None, newLine: false, indented: false);
-        state.Text(" ", indented: false);
-        state.AutoSet(GeneratorState.Visibility.None, newLine: false, indented: false);
-        state.Text(" ", indented: false);
-        state.EndBlock(newLine: false, indented: false);
+        GenerateProperty(state, isReadonly: false);
     }
 
     public virtual void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
@@ -112,7 +105,7 @@ public abstract class BaseInstruction : IProtocolInstruction
             state.BeginBlock();
         }
 
-        if (TypeInfo.IsArray)
+        if (TypeInfo.IsArray && HasProperty)
         {
             state.Text($"{Name}", indented: true);
             state.MethodInvocation("Add", GetDefaultValueForDeserialize());
@@ -151,18 +144,19 @@ public abstract class BaseInstruction : IProtocolInstruction
             }
 
             // Deserialize to "Name", with extras:
+            // - If ReadOnly, don't assign to Name; just deserialize the expected number of bytes
             // - If the field is an array, it requires an index into the array for the single element
             // - If the field is an enum, the result of the read requires a cast from int
             // - If the field is a boolean, it requires a conversion to bool; zero for false and nonzero for true
             // - If the field has an offset, it requires adjustment based on the provided offset value
             // - If the field doesn't have an associated property, ignore the value
-            var preDeserialize = HasProperty
+            var preDeserialize = HasProperty && !IsReadOnly
                 ? string.Format($"{Name}{{0}} = {{1}}",
                     $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
                     $"{(TypeInfo.IsEnum ? $"({TypeInfo.PropertyType})" : string.Empty)}")
                 : string.Empty;
 
-            var postDeserialize = HasProperty
+            var postDeserialize = HasProperty && !IsReadOnly
                 ? string.Format("{0}{1}",
                     $"{(TypeInfo.EoType.HasFlag(EoType.Bool) ? " != 0" : string.Empty)}",
                     $"{(Offset != 0 ? $" + {Offset}" : string.Empty)}")
@@ -203,13 +197,38 @@ public abstract class BaseInstruction : IProtocolInstruction
     {
         if (!HasProperty && !string.IsNullOrWhiteSpace(instructionContent))
         {
-            if (TypeInfo.EoType.HasFlag(EoType.String))
-                return $"\"{instructionContent}\"";
-            else
-                return instructionContent;
+            return FormatContent(instructionContent);
         }
 
         return IdentifierConverter.SnakeCaseToPascalCase(instructionName);
+    }
+
+    protected string FormatContent(string instructionContent)
+    {
+        return TypeInfo.EoType.HasFlag(EoType.String)
+            ? $"\"{instructionContent}\""
+            : instructionContent;
+    }
+
+    protected virtual void GenerateProperty(GeneratorState state, bool isReadonly, string defaultValue = "")
+    {
+        state.Comment(Comment);
+        state.Property(GeneratorState.Visibility.Public, $"{TypeInfo.PropertyType}", Name, newLine: false);
+        state.Text(" ", indented: false);
+        state.BeginBlock(newLine: false, indented: false);
+        state.Text(" ", indented: false);
+        state.AutoGet(GeneratorState.Visibility.None, newLine: false, indented: false);
+        if (!isReadonly)
+        {
+            state.Text(" ", indented: false);
+            state.AutoSet(GeneratorState.Visibility.None, newLine: false, indented: false);
+        }
+        state.Text(" ", indented: false);
+        state.EndBlock(newLine: false, indented: false);
+        if (!string.IsNullOrWhiteSpace(defaultValue))
+        {
+            state.Text($" = {defaultValue};", indented: false);
+        }
     }
 
     protected static string GetLengthExpression(string instructionLength, IReadOnlyList<IProtocolInstruction> outerInstructions)

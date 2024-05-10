@@ -8,6 +8,8 @@ public class FieldInstruction : BaseInstruction
 
     public override bool HasProperty => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Name);
 
+    protected override bool IsReadOnly => HasProperty && !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
+
     public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction)
     {
         _xmlFieldInstruction = xmlFieldInstruction;
@@ -23,5 +25,13 @@ public class FieldInstruction : BaseInstruction
         Comment = _xmlFieldInstruction.Comment;
 
         Length = _xmlFieldInstruction.Length;
+    }
+
+    public override void GenerateProperty(GeneratorState state)
+    {
+        if (!HasProperty)
+            return;
+
+        base.GenerateProperty(state, IsReadOnly, FormatContent(_xmlFieldInstruction.Content));
     }
 }
