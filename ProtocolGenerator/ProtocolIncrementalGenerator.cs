@@ -46,10 +46,11 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
 
         var filesFiltered = inputs.Files.Where(x => x.Path.StartsWith(Path.Combine(options.ProjectRoot, options.InputDirectory)));
 
-        var ddForGeneration = new DiagnosticDescriptor("EO0001", "EO Protocol Generation", "Generating EO protocol from {0}", "EO.Generation", DiagnosticSeverity.Warning, true);
-        context.ReportDiagnostic(Diagnostic.Create(ddForGeneration, Location.None, options.InputDirectory));
+        var ddForGeneration = new DiagnosticDescriptor("EO0001", "EO Protocol Generation", "Generating EO protocol from {0}", "EO.Generation", DiagnosticSeverity.Info, true);
+        var ddForFile = new DiagnosticDescriptor("EO0002", "EO Protocol File Info", "Generating protocol for: {0}", "EO.Generation", DiagnosticSeverity.Info, true);
+        var ddDuplicateTypeWarning = new DiagnosticDescriptor("EO0003", "EO Protocol duplicate type", "Duplicate protocol type detected: {0}", "EO.Generation", DiagnosticSeverity.Warning, true);
 
-        var ddForFile = new DiagnosticDescriptor("EO0002", "EO Protocol File Info", "Generating protocol for: {0}", "EO.Generation", DiagnosticSeverity.Warning, true);
+        context.ReportDiagnostic(Diagnostic.Create(ddForGeneration, Location.None, options.InputDirectory));
 
         var parsedFiles = new List<(string Path, ProtocolSpec Spec)>();
         foreach (var file in filesFiltered)
@@ -61,10 +62,20 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
             var model = (ProtocolSpec)serializer.Deserialize(ms);
 
             foreach (var e in model.Enums)
-                TypeMapper.Instance.RegisterEnum(e.Name, e.Type);
+            {
+                if (!TypeMapper.Instance.RegisterEnum(e.Name, e.Type))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(ddDuplicateTypeWarning, Location.None, e.Name));
+                }
+            }
 
             foreach (var s in model.Structs)
-                TypeMapper.Instance.RegisterStruct(s.Name, s);
+            {
+                if (!TypeMapper.Instance.RegisterStruct(s.Name, s))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(ddDuplicateTypeWarning, Location.None, s.Name));
+                }
+            }
 
             parsedFiles.Add((file.Path, model));
         }
