@@ -5,6 +5,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>10.0</LangVersion>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>Ethan Moffat</Authors>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://www.github.com/ethanmoffat/eolib-dotnet</PackageProjectUrl>
+        <RepositoryUrl>https://www.github.com/ethanmoffat/eolib-dotnet</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>endless-online;eo</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,7 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ProtocolGenerator\ProtocolGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\ProtocolGenerator\ProtocolGenerator.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
         <!-- CompilerVisibleProperty exposes the Include parameter as a property visible to
              generators/analyzers -->
