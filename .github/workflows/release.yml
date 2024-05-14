@@ -1,0 +1,58 @@
+name: Release new version
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Get version from tag
+        id: get-version
+        uses: battila7/get-version-action@v2.2.1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+      - name: Set AssemblyInfo version
+        uses: vers-one/dotnet-project-version-updater@v1.6
+        with:
+          version: ${{ steps.get-version.outputs.major }}.${{ steps.get-version.outputs.minor }}.${{ steps.get-version.outputs.patch }}
+          file: ${{ github.workspace }}/Moffat.EndlessOnline.SDK/Properties/AssemblyInfo.cs
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build -c Release --no-restore
+      - name: Pack NuGet package
+        run: dotnet pack Moffat.EndlessOnline.SDK/Moffat.EndlessOnline.SDK.csproj -c Release --no-build --no-restore -p:PackageVersion=${{ steps.get-version.outputs.version-without-v }} -o ${{ github.workspace }}/pkgs
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4.3.3
+        with:
+          name: pkg
+          path: ${{ github.workspace }}/pkgs/*.nupkg
+
+  github-release:
+    if: false
+    needs: publish-nuget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get version from tag
+        id: get-version
+        uses: battila7/get-version-action@v2
+      - name: Parse Changelog
+        id: changelog
+        uses: coditory/changelog-parser@v1
+        with:
+          version: ${{ steps.get-version.outputs.version-without-v }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Moffat.EndlessOnline.SDK v${{ steps.changelog.outputs.version }}
+          body: ${{ steps.changelog.outputs.description }}
