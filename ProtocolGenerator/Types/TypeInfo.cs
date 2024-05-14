@@ -34,7 +34,11 @@ public class TypeInfo
         Optional = optional;
         IsEnum = TypeMapper.Instance.HasEnum(ProtocolTypeName);
 
-        IsNullable = PropertyType.Contains("List") || PropertyType.Contains("string") || PropertyType.Contains("[]") || PropertyType.Contains("?");
+        IsNullable = PropertyType.Contains("List") ||
+            PropertyType.Contains("string") ||
+            PropertyType.Contains("[]") ||
+            PropertyType.Contains("?") ||
+            (!IsEnum && EoType.HasFlag(EoType.Struct));
     }
 
     public string GetSerializeMethodName()
