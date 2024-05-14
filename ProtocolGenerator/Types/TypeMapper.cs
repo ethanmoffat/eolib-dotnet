@@ -17,20 +17,22 @@ public class TypeMapper
 
     public bool HasStruct(string structName) => _structs.ContainsKey(structName);
 
-    public void RegisterEnum(string enumName, string enumType)
+    public bool RegisterEnum(string enumName, string enumType)
     {
         if (HasEnum(enumName))
-            throw new InvalidOperationException($"Duplicate enum name: {enumName} already exists in the protocol");
+            return false;
 
         _enums.Add(enumName, enumType);
+        return true;
     }
 
-    public void RegisterStruct(string structName, ProtocolStruct @struct)
+    public bool RegisterStruct(string structName, ProtocolStruct @struct)
     {
         if (HasStruct(structName))
-            throw new InvalidOperationException($"Duplicate struct name: {structName} already exists in the protocol");
+            return false;
 
         _structs.Add(structName, @struct);
+        return true;
     }
 
     public string GetEnum(string enumName) => _enums[enumName];

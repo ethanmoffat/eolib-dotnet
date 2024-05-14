@@ -6,9 +6,9 @@ namespace ProtocolGenerator;
 
 public static class PostInitOutput
 {
-    private const string IPacketInterface = @"using EOLib.Data;
+    private const string IPacketInterface = @"using Moffat.EndlessOnline.SDK.Data;
 
-namespace EOLib.Protocol.Net;
+namespace Moffat.EndlessOnline.SDK.Protocol.Net;
 
 /// <summary>
 /// Object representation of a packet in the EO network protocol
@@ -26,8 +26,8 @@ public interface IPacket : ISerializable
     PacketAction Action { get; }
 }";
 
-    private const string GlobalUsings = @"global using EOLib.Data;
-global using EOLib.Protocol.Pub;";
+    private const string GlobalUsings = @"global using Moffat.EndlessOnline.SDK.Data;
+global using Moffat.EndlessOnline.SDK.Protocol.Pub;";
 
     internal static void CreatePacketInterface(IncrementalGeneratorPostInitializationContext context)
     {

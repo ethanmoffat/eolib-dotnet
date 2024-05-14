@@ -11,7 +11,7 @@ namespace ProtocolGenerator;
 
 public class ProtocolGenerator
 {
-    private const string ProtocolNamespaceRoot = "EOLib.Protocol";
+    private const string ProtocolNamespaceRoot = "Moffat.EndlessOnline.SDK.Protocol";
 
     private readonly ProtocolGeneratorOptions _options;
     private readonly string _filePath;
