@@ -16,6 +16,8 @@
         <RepositoryUrl>https://www.github.com/ethanmoffat/eolib-dotnet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>endless-online;eo</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageDescription>Core library for writing Endless Online applications using .NET core.</PackageDescription>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,6 +36,10 @@
         <!-- AdditionalFiles makes the pattern available in the AdditionalTextsProvider of the
              generator context -->
         <AdditionalFiles Include="$(ProtocolGenerator_InputDirectory)\**\*.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <PropertyGroup>
