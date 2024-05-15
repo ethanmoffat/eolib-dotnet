@@ -25,20 +25,20 @@ jobs:
         with:
           version: ${{ steps.get-version.outputs.major }}.${{ steps.get-version.outputs.minor }}.${{ steps.get-version.outputs.patch }}
           file: ${{ github.workspace }}/Moffat.EndlessOnline.SDK/Properties/AssemblyInfo.cs
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
       - name: Build
         run: dotnet build -c Release --no-restore
       - name: Pack NuGet package
         run: dotnet pack Moffat.EndlessOnline.SDK/Moffat.EndlessOnline.SDK.csproj -c Release --no-build --no-restore -p:PackageVersion=${{ steps.get-version.outputs.version-without-v }} -o ${{ github.workspace }}/pkgs
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4.3.3
+      - name: Push to NuGet
+        uses: edumserrano/nuget-push@v1.2.2
         with:
-          name: pkg
-          path: ${{ github.workspace }}/pkgs/*.nupkg
+          api-key: "${{ secrets.NUGET_PUSH_API_KEY }}"
+          nuget-package: ${{ github.workspace }}/pkgs/*.nupkg
+          fail-if-exists: true
 
   github-release:
-    if: false
     needs: publish-nuget
     runs-on: ubuntu-latest
     steps:
