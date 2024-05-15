@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## 1.0.0-beta - 2024-05-14
+## 1.0.0-beta1 - 2024-05-14
 
 ### Added
 
@@ -23,4 +23,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Data encryption
   - Packet sequencing
 
-[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta...HEAD
+[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta1...HEAD

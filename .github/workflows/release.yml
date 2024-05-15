@@ -36,7 +36,6 @@ jobs:
         with:
           api-key: "${{ secrets.NUGET_PUSH_API_KEY }}"
           nuget-package: ${{ github.workspace }}/pkgs/*.nupkg
-          fail-if-exists: true
 
   github-release:
     needs: publish-nuget
