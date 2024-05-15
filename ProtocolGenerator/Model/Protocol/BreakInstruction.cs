@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ProtocolGenerator.Model.Protocol;
@@ -13,6 +14,11 @@ public class BreakInstruction : BaseInstruction
 
     public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
+        if (!_isChunked)
+        {
+            throw new InvalidOperationException("Break bytes must be within a chunked instruction");
+        }
+
         state.Text("writer", indented: true);
         state.MethodInvocation("AddByte", "0xFF");
         state.Text(";", indented: false);
@@ -21,25 +27,16 @@ public class BreakInstruction : BaseInstruction
 
     public override void GenerateDeserialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
-        if (_isChunked)
+        if (!_isChunked)
         {
-            state.NewLine();
-            state.Text("reader", indented: true);
-            state.MethodInvocation("NextChunk");
-            state.Text(";", indented: false);
-            state.NewLine();
-            state.NewLine();
+            throw new InvalidOperationException("Break bytes must be within a chunked instruction");
         }
-        else
-        {
-            state.Text("if (reader", indented: true);
-            state.MethodInvocation("GetByte");
-            state.Text(" != 0xFF)", indented: false);
-            state.NewLine();
-            state.BeginBlock();
-            state.Text("throw new InvalidOperationException(\"Missing expected break byte\");", indented: true);
-            state.EndBlock();
-            state.NewLine();
-        }
+
+        state.NewLine();
+        state.Text("reader", indented: true);
+        state.MethodInvocation("NextChunk");
+        state.Text(";", indented: false);
+        state.NewLine();
+        state.NewLine();
     }
 }

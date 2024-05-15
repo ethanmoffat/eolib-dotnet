@@ -89,7 +89,13 @@ public class ProtocolGenerator
 
     private void Generate(ProtocolStruct inputType, GeneratorState state)
     {
-        ApplyChunked(inputType.Instructions);
+        if (string.IsNullOrWhiteSpace(inputType.BaseType))
+        {
+            // Only apply "IsChunked" to nested elements when there is no base type.
+            // Presence of a base type indicates this is a switch struct, meaning IsChunked has already been determined.
+            // Applying chunked again will overwrite the correct value with 'false' (unless another chunked element is present).
+            ApplyChunked(inputType.Instructions);
+        }
 
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
@@ -437,10 +443,12 @@ public class ProtocolGenerator
 
             if (inst is ProtocolChunkedInstruction pci)
             {
+                pci.IsChunked = true;
                 ApplyChunked(pci.Instructions, true);
             }
             else if (inst is ProtocolSwitchInstruction psi)
             {
+                psi.IsChunked = isChunked;
                 foreach (var c in psi.Cases)
                 {
                     c.IsChunked = isChunked;
