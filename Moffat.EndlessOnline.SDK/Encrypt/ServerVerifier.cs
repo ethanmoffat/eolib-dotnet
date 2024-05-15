@@ -14,8 +14,8 @@ public static class ServerVerifier
     /// </summary>
     /// <remarks>
     /// WARNING: Oversized challenges may result in negative hash values, which cannot be represented properly in the EO protocol.
-    /// <para>See: <see cref="InitInitClientPacket.Challenge" /></para>
-    /// <para>See also: <seealso cref="InitInitServerPacket.ReplyCodeDataOk.ChallengeResponse" /></para>
+    /// <para>See: <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Client.InitInitClientPacket.Challenge" /></para>
+    /// <para>See also: <seealso cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.InitInitServerPacket.ReplyCodeDataOk.ChallengeResponse" /></para>
     /// </remarks>
     /// <param name="challenge">The challenge value sent by the client. Should be no larger than <c>11,092,110</c>.</param>
     /// <returns>The hashed challenge value.</returns>

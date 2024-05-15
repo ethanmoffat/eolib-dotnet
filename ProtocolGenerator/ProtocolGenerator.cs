@@ -54,7 +54,7 @@ public class ProtocolGenerator
     {
         var allSpecs = _fullSpec.Enums.Concat<object>(_fullSpec.Structs).Concat(_fullSpec.Packets);
 
-        var sb = new StringBuilder($"namespace {Namespace};\n\n");
+        var sb = new StringBuilder($"namespace {Namespace};\n\n#pragma warning disable 1591\n\n");
         foreach (var type in allSpecs)
         {
             var state = new GeneratorState();
@@ -70,6 +70,8 @@ public class ProtocolGenerator
 
             sb.AppendLine(state.Output());
         }
+
+        sb.AppendLine("#pragma warning restore 1591\n");
 
         return SourceText.From(sb.ToString(), Encoding.UTF8);
     }

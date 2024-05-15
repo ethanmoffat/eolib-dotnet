@@ -12,6 +12,9 @@ public static class StringEncoder
         Encoding = CodePagesEncodingProvider.Instance.GetEncoding(1252) ?? throw new InvalidOperationException("Unable to load Windows-1252 code page.");
     }
 
+    /// <summary>
+    /// The encoding to use for reading/writing EO strings. This is set to an encoding representing the Windows-1252 code page.
+    /// </summary>
     public static Encoding Encoding { get; }
 
     /// <summary>

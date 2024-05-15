@@ -2,18 +2,21 @@ using Moffat.EndlessOnline.SDK.Data;
 
 namespace Moffat.EndlessOnline.SDK.Packet;
 
+/// <summary>
+/// A class representing the sequence start value sent with the INIT_INIT server packet.
+/// </summary>
 public sealed class InitSequenceStart : ISequenceStart
 {
     /// <inheritdoc />
     public int Value { get; }
 
     /// <summary>
-    /// Gets the seq1 byte value sent with the INIT_INIT server packet. See <see cref="InitInitServerPacket.ReplyCodeDataOk.Seq1" />.
+    /// Gets the seq1 byte value sent with the INIT_INIT server packet. See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.InitInitServerPacket.ReplyCodeDataOk.Seq1" />.
     /// </summary>
     public int Seq1 { get; }
 
     /// <summary>
-    /// Gets the seq2 byte value sent with the INIT_INIT server packet. See <see cref="InitInitServerPacket.ReplyCodeDataOk.Seq2" />.
+    /// Gets the seq2 byte value sent with the INIT_INIT server packet. See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.InitInitServerPacket.ReplyCodeDataOk.Seq2" />.
     /// </summary>
     public int Seq2 { get; }
 
@@ -28,7 +31,7 @@ public sealed class InitSequenceStart : ISequenceStart
     /// Creates an instance of <see cref="InitSequenceStart"/> from the values sent with the INIT_INIT server packet.
     /// </summary>
     /// <remarks>
-    /// See <see cref="InitInitServerPacket.ReplyCodeDataOk.Seq1" />. See also <seealso cref="InitInitServerPacket.ReplyCodeDataOk.Seq2" />.
+    /// See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.InitInitServerPacket.ReplyCodeDataOk.Seq1" />. See also <seealso cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.InitInitServerPacket.ReplyCodeDataOk.Seq2" />.
     /// </remarks>
     /// <param name="seq1">The seq1 byte value sent with the INIT_INIT server packet</param>
     /// <param name="seq2">The seq2 byte value sent with the INIT_INIT server packet</param>

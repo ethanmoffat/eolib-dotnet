@@ -17,7 +17,7 @@ public class AccountReplySequenceStart : ISequenceStart
     /// Creates an instance of <see cref="AccountReplySequenceStart"/> from the value sent with the ACCOUNT_REPLY server packet.
     /// </summary>
     /// <remarks>
-    /// See <see cref="AccountReplyServerPacket.ReplyCodeDataDefault.SequenceStart" />.
+    /// See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.AccountReplyServerPacket.ReplyCodeDataDefault.SequenceStart" />.
     /// </remarks>
     /// <param name="value">The sequence_start char value sent with the ACCOUNT_REPLY server packet</param>
     /// <returns>An instance of <see cref="AccountReplySequenceStart"/></returns>

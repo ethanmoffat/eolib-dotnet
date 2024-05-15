@@ -9,7 +9,7 @@ public sealed class PacketSequencer
     private int _counter;
 
     /// <summary>
-    /// Constructs a new PacketSequencer with the provided <see cref="SequenceStart" />
+    /// Constructs a new PacketSequencer with the provided <see cref="ISequenceStart" />
     /// </summary>
     /// <param name="start">The sequence start</param>
     public PacketSequencer(ISequenceStart start)

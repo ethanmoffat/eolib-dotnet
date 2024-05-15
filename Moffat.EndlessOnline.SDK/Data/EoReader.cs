@@ -63,7 +63,7 @@ public sealed class EoReader
     /// <summary>
     /// Creates a new <c>EoReader</c> instance for the specified data.
     /// </summary>
-    /// <param name="data">The byte array containing the input data</paramref>
+    /// <param name="data">The byte array containing the input data</param>
     public EoReader(byte[] data)
         : this(data, 0, data.Length) { }
 
@@ -226,7 +226,7 @@ public sealed class EoReader
     /// Reads a string with a fixed length from the input data.
     /// </summary>
     /// <param name="length">The length of the string</param>
-    /// <param name="padded">True if the string is padded with trailing <c>0xFF</c> bytes
+    /// <param name="padded">True if the string is padded with trailing <c>0xFF</c> bytes</param>
     /// <returns>A decoded string</returns>
     /// <exception cref="ArgumentException">If the length is negative</exception>
     public string GetFixedString(int length, bool padded)
@@ -269,7 +269,7 @@ public sealed class EoReader
     /// Reads an encoded string with a fixed length from the input data.
     /// </summary>
     /// <param name="length">The length of the string</param>
-    /// <param name="padded">True if the string is padded with trailing <c>0xFF</c> bytes
+    /// <param name="padded">True if the string is padded with trailing <c>0xFF</c> bytes</param>
     /// <returns>A decoded string</returns>
     /// <exception cref="ArgumentException">If the length is negative</exception>
     public string GetFixedEncodedString(int length, bool padded)

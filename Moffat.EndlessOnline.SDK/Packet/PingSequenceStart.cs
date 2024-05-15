@@ -12,12 +12,12 @@ public class PingSequenceStart : ISequenceStart
 
 
     /// <summary>
-    /// Gets the seq1 byte value sent with the CONNECTION_PLAYER server packet. See <see cref="ConnectionPlayerServerPacket.Seq1" />.
+    /// Gets the seq1 byte value sent with the CONNECTION_PLAYER server packet. See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.ConnectionPlayerServerPacket.Seq1" />.
     /// </summary>
     public int Seq1 { get; }
 
     /// <summary>
-    /// Gets the seq2 byte value sent with the CONNECTION_PLAYER server packet. See <see cref="ConnectionPlayerServerPacket.Seq2" />.
+    /// Gets the seq2 byte value sent with the CONNECTION_PLAYER server packet. See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.ConnectionPlayerServerPacket.Seq2" />.
     /// </summary>
     public int Seq2 { get; }
 
@@ -32,7 +32,7 @@ public class PingSequenceStart : ISequenceStart
     /// Creates an instance of <see cref="PingSequenceStart"/> from the values sent with the CONNECTION_PLAYER server packet.
     /// </summary>
     /// <remarks>
-    /// See <see cref="ConnectionPlayerServerPacket.Seq1" />. See also <seealso cref="ConnectionPlayerServerPacket.Seq2" />.
+    /// See <see cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.ConnectionPlayerServerPacket.Seq1" />. See also <seealso cref="Moffat.EndlessOnline.SDK.Protocol.Net.Server.ConnectionPlayerServerPacket.Seq2" />.
     /// </remarks>
     /// <param name="seq1">The seq1 byte value sent with the CONNECTION_PLAYER server packet</param>
     /// <param name="seq2">The seq2 byte value sent with the CONNECTION_PLAYER server packet</param>
