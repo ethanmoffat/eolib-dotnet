@@ -3,6 +3,7 @@
 Core library for writing Endless Online applications using .NET core.
 
 [![build](https://github.com/ethanmoffat/eolib-dotnet/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/ethanmoffat/eolib-dotnet/actions/workflows/build.yml)
+[![Nuget](https://badgen.net/nuget/v/Moffat.EndlessOnline.SDK?icon=nuget)](https://www.nuget.org/packages/Moffat.EndlessOnline.SDK/)
 
 ## Features
 
