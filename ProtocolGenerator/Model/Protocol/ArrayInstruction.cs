@@ -30,6 +30,8 @@ public class ArrayInstruction : BaseInstruction
         var delimited = _xmlArrayInstruction.Delimited.HasValue && _xmlArrayInstruction.Delimited.Value;
         var trailingDelimiter = !_xmlArrayInstruction.TrailingDelimiter.HasValue || _xmlArrayInstruction.TrailingDelimiter.Value;
 
+        AssertLength(state, _xmlArrayInstruction.Length);
+
         if (!string.IsNullOrWhiteSpace(_xmlArrayInstruction.Length))
         {
             var lenExpr = GetLengthExpression(_xmlArrayInstruction.Length, outerInstructions);

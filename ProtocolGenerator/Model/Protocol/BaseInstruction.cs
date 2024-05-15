@@ -31,7 +31,7 @@ public abstract class BaseInstruction : IProtocolInstruction
         if (!HasProperty)
             return;
 
-        GenerateProperty(state, isReadonly: false);
+        GenerateProperty(state, defaultValue: string.Empty);
     }
 
     public virtual void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
@@ -210,7 +210,7 @@ public abstract class BaseInstruction : IProtocolInstruction
             : instructionContent;
     }
 
-    protected virtual void GenerateProperty(GeneratorState state, bool isReadonly, string defaultValue = "")
+    protected virtual void GenerateProperty(GeneratorState state, string defaultValue)
     {
         state.Comment(Comment);
         state.Property(GeneratorState.Visibility.Public, $"{TypeInfo.PropertyType}", Name, newLine: false);
@@ -218,7 +218,7 @@ public abstract class BaseInstruction : IProtocolInstruction
         state.BeginBlock(newLine: false, indented: false);
         state.Text(" ", indented: false);
         state.AutoGet(GeneratorState.Visibility.None, newLine: false, indented: false);
-        if (!isReadonly)
+        if (!IsReadOnly)
         {
             state.Text(" ", indented: false);
             state.AutoSet(GeneratorState.Visibility.None, newLine: false, indented: false);
@@ -241,6 +241,24 @@ public abstract class BaseInstruction : IProtocolInstruction
             throw new InvalidOperationException($"Could not find 'length' instruction with name {instructionLength}");
 
         return convertedName;
+    }
+
+    protected void AssertLength(GeneratorState state, string instructionLength)
+    {
+        var lengthIsConstant = int.TryParse(instructionLength, out var _);
+        if (lengthIsConstant && !IsReadOnly)
+        {
+            var countProperty = TypeInfo.PropertyType.StartsWith("List")
+                ? "Count"
+                : "Length";
+
+            state.Text($"if ({Name}?.{countProperty} != {instructionLength})", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+            state.Text($"throw new InvalidOperationException($\"Expected {Name} to have {instructionLength} items, but was {{({Name}?.{countProperty} ?? 0)}}\");", indented: true);
+            state.NewLine();
+            state.EndBlock();
+        }
     }
 
     private string GetDefaultValueForDeserialize()

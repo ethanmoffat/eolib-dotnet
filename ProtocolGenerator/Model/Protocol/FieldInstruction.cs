@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator.Model.Protocol;
@@ -8,7 +9,7 @@ public class FieldInstruction : BaseInstruction
 
     public override bool HasProperty => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Name);
 
-    protected override bool IsReadOnly => HasProperty && !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
+    protected override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
 
     public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction)
     {
@@ -27,11 +28,14 @@ public class FieldInstruction : BaseInstruction
         Length = _xmlFieldInstruction.Length;
     }
 
-    public override void GenerateProperty(GeneratorState state)
+    public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)
     {
-        if (!HasProperty)
-            return;
+        AssertLength(state, _xmlFieldInstruction.Length);
+        base.GenerateSerialize(state, outerInstructions);
+    }
 
-        base.GenerateProperty(state, IsReadOnly, FormatContent(_xmlFieldInstruction.Content));
+    protected override void GenerateProperty(GeneratorState state, string defaultValue)
+    {
+        base.GenerateProperty(state, FormatContent(_xmlFieldInstruction.Content));
     }
 }
