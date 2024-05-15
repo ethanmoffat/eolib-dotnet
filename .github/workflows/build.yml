@@ -5,30 +5,36 @@ name: .NET build
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
+    paths-ignore:
+      - "CHANGELOG.md"
+      - "README.md"
   pull_request:
-    branches: [ "master" ]
-  
+    branches: ["master"]
+    paths-ignore:
+      - "CHANGELOG.md"
+      - "README.md"
+
 jobs:
   build:
     strategy:
       matrix:
         os:
-        - ubuntu-latest
-        - windows-latest
+          - ubuntu-latest
+          - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 6.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore --no-incremental
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --no-incremental
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
