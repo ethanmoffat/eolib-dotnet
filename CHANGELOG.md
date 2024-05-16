@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-beta4] - 2024-05-16
+
+### Fixed
+
+- Length properties referenced by a field or array now correctly generate private readonly properties in all cases.
+
 ## [1.0.0-beta3] - 2024-05-15
 
 ### Fixed
@@ -38,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta3...HEAD
-[1.0.0-beta3]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta2...beta3
-[1.0.0-beta2]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta1...beta2
+[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta4...HEAD
+[1.0.0-beta4]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta2...v1.0.0-beta3
+[1.0.0-beta3]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta2...v1.0.0-beta3
+[1.0.0-beta2]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta1...v1.0.0-beta2
