@@ -441,14 +441,7 @@ public class ProtocolGenerator
         {
             if (inst is ProtocolChunkedInstruction pci)
             {
-                retList.AddRange(pci.Instructions);
-            }
-            else if (inst is ProtocolSwitchInstruction psi)
-            {
-                foreach (var c in psi.Cases)
-                {
-                    retList.AddRange(c.Instructions);
-                }
+                retList.AddRange(Flatten(pci.Instructions));
             }
             else
             {
@@ -486,11 +479,8 @@ public class ProtocolGenerator
 
     private static void AssociateLengths(IReadOnlyList<object> instructions)
     {
-        var lengths = instructions.OfType<ProtocolLengthInstruction>().ToList();
-        if (!lengths.Any())
-            return;
-
         var flattened = Flatten(instructions);
+        var lengths = flattened.OfType<ProtocolLengthInstruction>().ToList();
 
         foreach (var inst in flattened)
         {
@@ -498,13 +488,9 @@ public class ProtocolGenerator
             {
                 AssociateLength(pfi.Length, pfi.Name, lengths, isArray: false);
             }
-            else if (inst is ProtocolArrayInstruction pai && !string.IsNullOrWhiteSpace(pai.Length) && !int.TryParse(s: pai.Length, out var _))
+            else if (inst is ProtocolArrayInstruction pai)
             {
                 AssociateLength(pai.Length, pai.Name, lengths, isArray: true);
-            }
-            else if (inst is ProtocolChunkedInstruction pci)
-            {
-                AssociateLengths(pci.Instructions);
             }
             else if (inst is ProtocolSwitchInstruction psi)
             {
