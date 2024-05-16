@@ -22,6 +22,8 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     protected virtual bool IsReadOnly => false;
 
+    protected virtual bool DeserializeToLocal => false;
+
     public List<IProtocolInstruction> Instructions { get; protected set; } = new();
 
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
@@ -144,19 +146,22 @@ public abstract class BaseInstruction : IProtocolInstruction
             }
 
             // Deserialize to "Name", with extras:
+            // - If DeserializeToLocal, this is a <length> element for an array or string: *just* for deserialize, we store the result in a local var (length is implicitly mapped to another property's size for serialize)
             // - If ReadOnly, don't assign to Name; just deserialize the expected number of bytes
             // - If the field is an array, it requires an index into the array for the single element
             // - If the field is an enum, the result of the read requires a cast from int
             // - If the field is a boolean, it requires a conversion to bool; zero for false and nonzero for true
             // - If the field has an offset, it requires adjustment based on the provided offset value
             // - If the field doesn't have an associated property, ignore the value
-            var preDeserialize = HasProperty && !IsReadOnly
-                ? string.Format($"{Name}{{0}} = {{1}}",
-                    $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
-                    $"{(TypeInfo.IsEnum ? $"({TypeInfo.PropertyType})" : string.Empty)}")
-                : string.Empty;
+            var preDeserialize = DeserializeToLocal
+                ? $"var {Name} = "
+                : HasProperty && !IsReadOnly
+                    ? string.Format($"{Name}{{0}} = {{1}}",
+                        $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
+                        $"{(TypeInfo.IsEnum ? $"({TypeInfo.PropertyType})" : string.Empty)}")
+                    : string.Empty;
 
-            var postDeserialize = HasProperty && !IsReadOnly
+            var postDeserialize = HasProperty && (!IsReadOnly || DeserializeToLocal)
                 ? string.Format("{0}{1}",
                     $"{(TypeInfo.EoType.HasFlag(EoType.Bool) ? " != 0" : string.Empty)}",
                     $"{(Offset != 0 ? $" + {Offset}" : string.Empty)}")

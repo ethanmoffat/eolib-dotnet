@@ -95,6 +95,7 @@ public class ProtocolGenerator
             // Presence of a base type indicates this is a switch struct, meaning IsChunked has already been determined.
             // Applying chunked again will overwrite the correct value with 'false' (unless another chunked element is present).
             ApplyChunked(inputType.Instructions);
+            AssociateLengths(inputType.Instructions);
         }
 
         state.Comment(inputType.Comment);
@@ -121,6 +122,7 @@ public class ProtocolGenerator
     private void Generate(ProtocolPacket inputType, GeneratorState state)
     {
         ApplyChunked(inputType.Instructions);
+        AssociateLengths(inputType.Instructions);
 
         state.Comment(inputType.Comment);
         state.Attribute("Generated");
@@ -419,7 +421,7 @@ public class ProtocolGenerator
         state.EndBlock();
     }
 
-    private static List<IProtocolInstruction> Flatten(List<IProtocolInstruction> instructions)
+    private static List<IProtocolInstruction> Flatten(IReadOnlyList<IProtocolInstruction> instructions)
     {
         var retList = new List<IProtocolInstruction>();
         for (int i = 0; i < instructions.Count; i++)
@@ -428,6 +430,30 @@ public class ProtocolGenerator
                 retList.AddRange(Flatten(instructions[i].Instructions));
             else
                 retList.Add(instructions[i]);
+        }
+        return retList;
+    }
+
+    private static List<object> Flatten(IReadOnlyList<object> instructions)
+    {
+        var retList = new List<object>();
+        foreach (var inst in instructions)
+        {
+            if (inst is ProtocolChunkedInstruction pci)
+            {
+                retList.AddRange(pci.Instructions);
+            }
+            else if (inst is ProtocolSwitchInstruction psi)
+            {
+                foreach (var c in psi.Cases)
+                {
+                    retList.AddRange(c.Instructions);
+                }
+            }
+            else
+            {
+                retList.Add(inst);
+            }
         }
         return retList;
     }
@@ -455,6 +481,53 @@ public class ProtocolGenerator
                     ApplyChunked(c.Instructions, isChunked);
                 }
             }
+        }
+    }
+
+    private static void AssociateLengths(IReadOnlyList<object> instructions)
+    {
+        var lengths = instructions.OfType<ProtocolLengthInstruction>().ToList();
+        if (!lengths.Any())
+            return;
+
+        var flattened = Flatten(instructions);
+
+        foreach (var inst in flattened)
+        {
+            if (inst is ProtocolFieldInstruction pfi)
+            {
+                AssociateLength(pfi.Length, pfi.Name, lengths, isArray: false);
+            }
+            else if (inst is ProtocolArrayInstruction pai && !string.IsNullOrWhiteSpace(pai.Length) && !int.TryParse(s: pai.Length, out var _))
+            {
+                AssociateLength(pai.Length, pai.Name, lengths, isArray: true);
+            }
+            else if (inst is ProtocolChunkedInstruction pci)
+            {
+                AssociateLengths(pci.Instructions);
+            }
+            else if (inst is ProtocolSwitchInstruction psi)
+            {
+                foreach (var c in psi.Cases)
+                {
+                    AssociateLengths(c.Instructions);
+                }
+            }
+        }
+
+        static void AssociateLength(string length, string instName, IReadOnlyList<ProtocolLengthInstruction> lengths, bool isArray)
+        {
+            if (string.IsNullOrWhiteSpace(length) || int.TryParse(length, out var _))
+                return;
+
+            var matchingLength = lengths.SingleOrDefault(x => x.Name.Equals(length));
+            if (matchingLength == null)
+            {
+                throw new InvalidOperationException($"Instruction {instName} references length {length} that was not found in set of length fields: [{string.Join(",", lengths.Select(x => x.Name))}]");
+            }
+
+            matchingLength.LengthFor = instName;
+            matchingLength.LengthForArray = isArray;
         }
     }
 }

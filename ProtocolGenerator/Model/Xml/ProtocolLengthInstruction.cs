@@ -24,4 +24,10 @@ public sealed class ProtocolLengthInstruction : ProtocolBaseInstruction
 
     [XmlIgnore]
     public int? Offset => int.TryParse(OffsetRaw, out var res) ? res : null;
+
+    [XmlIgnore]
+    public string LengthFor { get; set; }
+
+    [XmlIgnore]
+    public bool LengthForArray { get; set; }
 }
