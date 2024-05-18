@@ -17,7 +17,7 @@ public sealed class ProtocolStruct
     [XmlElement("break", typeof(ProtocolBreakInstruction))]
     public List<object> Instructions { get; set; }
 
-    [XmlAttribute("comment")]
+    [XmlElement("comment")]
     public string Comment { get; set; }
 
     [XmlIgnore]
