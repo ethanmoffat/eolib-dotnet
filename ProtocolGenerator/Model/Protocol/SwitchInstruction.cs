@@ -13,7 +13,7 @@ public class SwitchInstruction : BaseInstruction
     {
         _xmlSwitchInstruction = xmlSwitchInstruction;
 
-        TypeInfo = new TypeInfo(GetSwitchInterfaceType(_xmlSwitchInstruction.Field));
+        TypeInfo = new TypeInfo(GetSwitchInterfaceType(_xmlSwitchInstruction.Field), isInterface: true);
         Name = GetSwitchInterfaceMemberName(_xmlSwitchInstruction.Field);
         _fieldName = IdentifierConverter.SnakeCaseToPascalCase(_xmlSwitchInstruction.Field);
     }

@@ -230,6 +230,13 @@ public abstract class BaseInstruction : IProtocolInstruction
         }
         state.Text(" ", indented: false);
         state.EndBlock(newLine: false, indented: false);
+
+        var needsInitialization = TypeInfo.EoType.HasFlag(EoType.Struct) && !TypeInfo.IsArray && !TypeInfo.IsInterface && !TypeInfo.IsEnum;
+        if (string.IsNullOrWhiteSpace(defaultValue) && needsInitialization)
+        {
+            defaultValue = $"new {TypeInfo.PropertyType}()";
+        }
+
         if (!string.IsNullOrWhiteSpace(defaultValue))
         {
             state.Text($" = {defaultValue};", indented: false);

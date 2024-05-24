@@ -16,13 +16,15 @@ public class TypeInfo
 
     public bool IsArray { get; }
 
+    public bool IsInterface { get; }
+
     public bool Optional { get; }
 
     public bool IsEnum { get; }
 
     public bool IsNullable { get; }
 
-    public TypeInfo(string rawType, bool isArray = false, bool optional = false, bool padded = false, bool @fixed = false)
+    public TypeInfo(string rawType, bool isArray = false, bool isInterface = false, bool optional = false, bool padded = false, bool @fixed = false)
     {
         ProtocolTypeName = GetTypeName(rawType);
         ProtocolTypeSize = GetTypeSize(rawType);
@@ -31,6 +33,7 @@ public class TypeInfo
 
         PropertyType = GetDotNetType(ProtocolTypeName, isArray, optional);
         IsArray = isArray;
+        IsInterface = isInterface;
         Optional = optional;
         IsEnum = TypeMapper.Instance.HasEnum(ProtocolTypeName);
 
