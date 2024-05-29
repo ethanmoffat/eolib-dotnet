@@ -74,6 +74,7 @@ public class ArrayInstruction : BaseInstruction
     {
         var delimited = _xmlArrayInstruction.Delimited.HasValue && _xmlArrayInstruction.Delimited.Value;
 
+        var storeRemaining = false;
         string loopCondition;
         if (!string.IsNullOrWhiteSpace(_xmlArrayInstruction.Length))
         {
@@ -85,8 +86,9 @@ public class ArrayInstruction : BaseInstruction
             try
             {
                 var typeSize = TypeInfo.CalculateByteSize();
-                loopCondition = typeSize > 1
-                    ? $"ndx < reader.Remaining / {typeSize}"
+                storeRemaining = typeSize > 1;
+                loopCondition = storeRemaining
+                    ? $"ndx < remainingFor{Name} / {typeSize}"
                     : "reader.Remaining > 0";
             }
             catch
@@ -97,6 +99,12 @@ public class ArrayInstruction : BaseInstruction
         else
         {
             loopCondition = "reader.Remaining > 0";
+        }
+
+        if (storeRemaining)
+        {
+            state.Text($"var remainingFor{Name} = reader.Remaining;", indented: true);
+            state.NewLine();
         }
 
         state.For("int ndx = 0", loopCondition, "ndx++");
