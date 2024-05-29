@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc2] - 2024-05-28
+
+### Fixed
+
+- Generated ToString() implementations correctly stringify structures.
+- Arrays that are deserialized based on the value of reader.Remaining now properly store the initial "remaining" value. Fixes a bug where only half of an array in a given chunk would be read.
+
 ## [1.0.0-rc1] - 2024-05-23
 
 ### Fixed
@@ -51,7 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc1...HEAD
+[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc2...HEAD
+[1.0.0-rc2]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc1...v1.0.0-rc2
 [1.0.0-rc1]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta4...v1.0.0-rc1
 [1.0.0-beta4]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta3...v1.0.0-beta4
 [1.0.0-beta3]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta2...v1.0.0-beta3
