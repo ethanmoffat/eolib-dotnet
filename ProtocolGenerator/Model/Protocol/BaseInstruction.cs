@@ -260,14 +260,18 @@ public abstract class BaseInstruction : IProtocolInstruction
         var lengthIsConstant = int.TryParse(instructionLength, out var _);
         if (lengthIsConstant && !IsReadOnly)
         {
+            var isPadded = TypeInfo.EoType.HasFlag(EoType.Padded);
+            var op = isPadded ? ">" : "!=";
+            var errorExtra = isPadded ? "no more than " : string.Empty;
+
             var countProperty = TypeInfo.PropertyType.StartsWith("List")
                 ? "Count"
                 : "Length";
 
-            state.Text($"if ({Name}?.{countProperty} != {instructionLength})", indented: true);
+            state.Text($"if ({Name}?.{countProperty} {op} {instructionLength})", indented: true);
             state.NewLine();
             state.BeginBlock();
-            state.Text($"throw new InvalidOperationException($\"Expected {Name} to have {instructionLength} items, but was {{({Name}?.{countProperty} ?? 0)}}\");", indented: true);
+            state.Text($"throw new InvalidOperationException($\"Expected {Name} to have {errorExtra}{instructionLength} items, but was {{({Name}?.{countProperty} ?? 0)}}\");", indented: true);
             state.NewLine();
             state.EndBlock();
         }
