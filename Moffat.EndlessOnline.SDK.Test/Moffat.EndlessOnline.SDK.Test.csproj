@@ -20,4 +20,10 @@
         <ProjectReference Include="..\Moffat.EndlessOnline.SDK\Moffat.EndlessOnline.SDK.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="eo-captured-packets\**\*.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>

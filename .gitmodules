@@ -1,3 +1,6 @@
 [submodule "eo-protocol"]
 	path = eo-protocol
 	url = https://github.com/Cirras/eo-protocol.git
+[submodule "Moffat.EndlessOnline.SDK.Test/eo-captured-packets"]
+	path = Moffat.EndlessOnline.SDK.Test/eo-captured-packets
+	url = https://www.github.com/ethanmoffat/eo-captured-packets
