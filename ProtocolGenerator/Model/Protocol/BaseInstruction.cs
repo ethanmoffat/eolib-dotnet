@@ -40,7 +40,8 @@ public abstract class BaseInstruction : IProtocolInstruction
     {
         if (TypeInfo.Optional)
         {
-            state.Text($"if ({Name}.HasValue)", indented: true);
+            var isStruct = !TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct);
+            state.Text($"if ({Name}{(isStruct ? " != null" : ".HasValue")})", indented: true);
             state.NewLine();
             state.BeginBlock();
         }
@@ -105,6 +106,12 @@ public abstract class BaseInstruction : IProtocolInstruction
             state.Text($"if (reader.Remaining > 0)", indented: true);
             state.NewLine();
             state.BeginBlock();
+
+            var isStruct = !TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct);
+            if (isStruct)
+            {
+                state.Text($"{Name} = new();\n", indented: true);
+            }
         }
 
         if (TypeInfo.IsArray && HasProperty)
@@ -234,7 +241,11 @@ public abstract class BaseInstruction : IProtocolInstruction
         var needsInitialization = TypeInfo.EoType.HasFlag(EoType.Struct) && !TypeInfo.IsArray && !TypeInfo.IsInterface && !TypeInfo.IsEnum;
         if (string.IsNullOrWhiteSpace(defaultValue) && needsInitialization)
         {
-            defaultValue = $"new {TypeInfo.PropertyType}()";
+            var isStruct = !TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct);
+            if (!(isStruct && TypeInfo.Optional))
+            {
+                defaultValue = $"new {TypeInfo.PropertyType}()";
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(defaultValue))

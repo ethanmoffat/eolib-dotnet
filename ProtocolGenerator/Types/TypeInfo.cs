@@ -31,7 +31,8 @@ public class TypeInfo
 
         EoType = ProtocolTypeName.ToEoType(padded, @fixed);
 
-        PropertyType = GetDotNetType(ProtocolTypeName, isArray, optional);
+        var isStruct = TypeMapper.Instance.HasStruct(ProtocolTypeName);
+        PropertyType = GetDotNetType(ProtocolTypeName, isArray, optional, isStruct);
         IsArray = isArray;
         IsInterface = isInterface;
         Optional = optional;
@@ -41,7 +42,7 @@ public class TypeInfo
             PropertyType.Contains("string") ||
             PropertyType.Contains("[]") ||
             PropertyType.Contains("?") ||
-            (!IsEnum && EoType.HasFlag(EoType.Struct));
+            isStruct;
     }
 
     public string GetSerializeMethodName()
@@ -168,7 +169,7 @@ public class TypeInfo
         };
     }
 
-    public static string GetDotNetType(string inputType, bool isArray = false, bool optional = false)
+    public static string GetDotNetType(string inputType, bool isArray = false, bool optional = false, bool isStruct = false)
     {
         var ret = inputType switch
         {
@@ -179,7 +180,7 @@ public class TypeInfo
             _ => inputType,
         };
 
-        if (optional && ret != "byte[]")
+        if (optional && ret != "byte[]" && !isStruct)
             ret += "?";
         else if (isArray)
             ret = $"List<{ret}>";
