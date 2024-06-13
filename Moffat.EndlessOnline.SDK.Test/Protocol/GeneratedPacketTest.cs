@@ -47,7 +47,6 @@ public abstract class GeneratedPacketTest
         }
 
         IPacket packetInstance = _resolver.Create(_model.Family, _model.Action);
-
         ApplyProperties(_model.Properties, packetInstance);
 
         var writer = new EoWriter();
@@ -56,10 +55,26 @@ public abstract class GeneratedPacketTest
         Assert.That(writer.ToByteArray(), Is.EqualTo(_model.Expected));
     }
 
-    // [Test]
-    // public void Deserialize_CreatesExpectedModelObject()
-    // {
-    // }
+    [Test]
+    public void Deserialize_CreatesExpectedModelObject()
+    {
+        // todo: un-ignore these tests once fixes are merged to eo-protocol
+        if ((_model.Family == PacketFamily.Quest && _model.Action == PacketAction.Accept && _model.Properties.Any(x => x.Value != null && x.Value is long i && (int)i == (int)DialogReply.Ok)) ||
+            (_model.Family == PacketFamily.AdminInteract && _model.Action == PacketAction.Tell))
+        {
+            Assert.Ignore($"Packet ID {_model.Family}_{_model.Action} has known protocol bugs");
+            return;
+        }
+
+        IPacket actualInstance = _resolver.Create(_model.Family, _model.Action);
+        ApplyProperties(_model.Properties, actualInstance);
+
+        IPacket expectedInstance = _resolver.Create(_model.Family, _model.Action);
+        var reader = new EoReader(_model.Expected);
+        expectedInstance.Deserialize(reader);
+
+        Assert.That(actualInstance, Is.EqualTo(expectedInstance));
+    }
 
     private void ApplyProperties(IReadOnlyList<DumpProperty>? properties, object targetObject)
     {
