@@ -201,7 +201,9 @@ public abstract class BaseInstruction : IProtocolInstruction
         if (!HasProperty)
             return;
 
-        state.Text($"{Name}{(TypeInfo.IsNullable ? $" == null ? {rhsIdentifier}.{Name} == null : {Name}" : string.Empty)}", indented: false);
+        var isStruct = !TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct);
+
+        state.Text($"{Name}{(TypeInfo.IsNullable || isStruct ? $" == null ? {rhsIdentifier}.{Name} == null : {Name}" : string.Empty)}", indented: false);
         state.MethodInvocation("Equals", $"{rhsIdentifier}.{Name}");
     }
 
