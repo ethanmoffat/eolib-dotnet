@@ -10,13 +10,15 @@ namespace Moffat.EndlessOnline.SDK.Test.Protocol;
 public abstract class GeneratedPacketTest
 {
     private readonly DumpModel _model;
+    private readonly bool _isOriginal;
     private readonly PacketResolver _resolver;
 
     protected abstract PacketType PacketType { get; }
 
-    protected GeneratedPacketTest(DumpModel model)
+    protected GeneratedPacketTest(DumpModel model, bool isOriginal)
     {
         _model = model;
+        _isOriginal = isOriginal;
         _resolver = PacketType == PacketType.Client
             ? new PacketResolver("Moffat.EndlessOnline.SDK.Protocol.Net.Client")
             : new PacketResolver("Moffat.EndlessOnline.SDK.Protocol.Net.Server");
@@ -33,39 +35,32 @@ public abstract class GeneratedPacketTest
             return;
         }
 
-        // todo: un-ignore these tests once fixes are merged to eo-protocol
-        if ((_model.Family == PacketFamily.Quest && _model.Action == PacketAction.Accept && _model.Properties.Any(x => x.Value != null && x.Value is long i && (int)i == (int)DialogReply.Ok)) ||
-            (_model.Family == PacketFamily.Account && _model.Action == PacketAction.Reply && _model.Properties.Any(x => x.Value != null && x.Value is long i && (int)i == (int)AccountReply.Changed)) ||
-            (_model.Family == PacketFamily.AdminInteract && _model.Action == PacketAction.Tell) ||
-            (_model.Family == PacketFamily.Recover && _model.Action == PacketAction.Player) ||
-            (_model.Family == PacketFamily.Shop && _model.Action == PacketAction.Open && PacketType == PacketType.Server) ||
-            (_model.Family == PacketFamily.Door && _model.Action == PacketAction.Open && PacketType == PacketType.Server) ||
-            (_model.Family == PacketFamily.Character && _model.Action == PacketAction.Remove))
+        IPacket expectedModel = _resolver.Create(_model.Family, _model.Action);
+        ApplyProperties(_model.Properties, expectedModel);
+
+        if (_isOriginal)
         {
-            Assert.Ignore($"Packet ID {_model.Family}_{_model.Action} has known protocol bugs");
-            return;
+            var writer = new EoWriter();
+            expectedModel.Serialize(writer);
+
+            var reader = new EoReader(writer.ToByteArray());
+            IPacket actualInstance = _resolver.Create(_model.Family, _model.Action);
+            actualInstance.Deserialize(reader);
+
+            Assert.That(actualInstance, Is.EqualTo(expectedModel));
         }
+        else
+        {
+            var writer = new EoWriter();
+            expectedModel.Serialize(writer);
 
-        IPacket packetInstance = _resolver.Create(_model.Family, _model.Action);
-        ApplyProperties(_model.Properties, packetInstance);
-
-        var writer = new EoWriter();
-        packetInstance.Serialize(writer);
-
-        Assert.That(writer.ToByteArray(), Is.EqualTo(_model.Expected));
+            Assert.That(writer.ToByteArray(), Is.EqualTo(_model.Expected));
+        }
     }
 
     [Test]
     public void Deserialize_CreatesExpectedModelObject()
     {
-        // todo: un-ignore these tests once fixes are merged to eo-protocol
-        if ((_model.Family == PacketFamily.Quest && _model.Action == PacketAction.Accept && _model.Properties.Any(x => x.Value != null && x.Value is long i && (int)i == (int)DialogReply.Ok)) ||
-            (_model.Family == PacketFamily.AdminInteract && _model.Action == PacketAction.Tell))
-        {
-            Assert.Ignore($"Packet ID {_model.Family}_{_model.Action} has known protocol bugs");
-            return;
-        }
-
         IPacket actualInstance = _resolver.Create(_model.Family, _model.Action);
         ApplyProperties(_model.Properties, actualInstance);
 
@@ -309,8 +304,8 @@ public class GeneratedClientPacketTest : GeneratedPacketTest
 {
     protected override PacketType PacketType => PacketType.Client;
 
-    public GeneratedClientPacketTest(string _, DumpModel model)
-        : base(model) { }
+    public GeneratedClientPacketTest(string _, DumpModel model, bool isOriginal)
+        : base(model, isOriginal) { }
 }
 
 [TestFixtureSource(typeof(GeneratedPacketSource), nameof(GeneratedPacketSource.ServerInputs))]
@@ -318,8 +313,8 @@ public class GeneratedServerPacketTest : GeneratedPacketTest
 {
     protected override PacketType PacketType => PacketType.Server;
 
-    public GeneratedServerPacketTest(string _, DumpModel model)
-        : base(model) { }
+    public GeneratedServerPacketTest(string _, DumpModel model, bool isOriginal)
+        : base(model, isOriginal) { }
 }
 
 public enum PacketType
@@ -335,22 +330,22 @@ public class GeneratedPacketSource
     static GeneratedPacketSource()
     {
         var clientList = new List<(string, DumpModel)>();
-        var clientPackets = Directory.GetFiles(Path.Combine(TestContext.CurrentContext.TestDirectory, DUMP_PATH, "client"));
+        var clientPackets = Directory.GetFiles(Path.Combine(TestContext.CurrentContext.TestDirectory, DUMP_PATH, "client"), "*.json", SearchOption.AllDirectories);
         foreach (var path in clientPackets)
         {
             var contents = JObject.Parse(File.ReadAllText(path)).ToObject<DumpModel>();
             clientList.Add((path, contents));
         }
-        ClientInputs = clientList.Select(x => new object[] { Path.GetFileNameWithoutExtension(x.Item1), x.Item2 }).ToArray();
+        ClientInputs = clientList.Select(x => new object[] { Path.GetFileNameWithoutExtension(x.Item1), x.Item2, x.Item1.Contains("original") }).ToArray();
 
         var serverList = new List<(string, DumpModel)>();
-        var serverPackets = Directory.GetFiles(Path.Combine(TestContext.CurrentContext.TestDirectory, DUMP_PATH, "server"));
+        var serverPackets = Directory.GetFiles(Path.Combine(TestContext.CurrentContext.TestDirectory, DUMP_PATH, "server"), "*.json", SearchOption.AllDirectories);
         foreach (var path in serverPackets)
         {
             var contents = JObject.Parse(File.ReadAllText(path)).ToObject<DumpModel>();
             serverList.Add((path, contents));
         }
-        ServerInputs = serverList.Select(x => new object[] { Path.GetFileNameWithoutExtension(x.Item1), x.Item2 }).ToArray();
+        ServerInputs = serverList.Select(x => new object[] { Path.GetFileNameWithoutExtension(x.Item1), x.Item2, x.Item1.Contains("original") }).ToArray();
     }
 
     public static object[] ClientInputs { get; }
