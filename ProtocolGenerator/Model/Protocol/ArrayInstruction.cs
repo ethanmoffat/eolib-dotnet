@@ -81,7 +81,7 @@ public class ArrayInstruction : BaseInstruction
             var lenExpr = GetLengthExpression(_xmlArrayInstruction.Length, outerInstructions);
             loopCondition = $"ndx < {lenExpr}";
         }
-        else if (!delimited && _xmlArrayInstruction.IsChunked)
+        else
         {
             try
             {
@@ -95,10 +95,6 @@ public class ArrayInstruction : BaseInstruction
             {
                 loopCondition = "reader.Remaining > 0";
             }
-        }
-        else
-        {
-            loopCondition = "reader.Remaining > 0";
         }
 
         if (storeRemaining)
