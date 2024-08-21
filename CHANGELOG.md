@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc3] - 2024-08-21
+
+### Added
+- `PacketResolver` class, which constructs an empty packet object type from a given family or action. Specified namespace determines whether packets are for "client" or "server" context.
+- Test coverage for generated code using `eo-captured-packets` submodule. See commit d81213d.
+
+### Fixed
+- Padded fields no longer assert an exact string length; instead, they assert maximum size.
+- Optional fields backed by reference types are no longer marked nullable.
+- Equals method overrides no longer result in `NullReferenceException` for `null` fields.
+- Array loops calculate element size in most cases, allowing readers to automatically ignore improperly-sized trailing data.
+
 ## [1.0.0-rc2] - 2024-05-28
 
 ### Fixed
@@ -58,7 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc2...HEAD
+[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc3...HEAD
+[1.0.0-rc3]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc2...v1.0.0-rc3
 [1.0.0-rc2]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc1...v1.0.0-rc2
 [1.0.0-rc1]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta4...v1.0.0-rc1
 [1.0.0-beta4]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta3...v1.0.0-beta4
