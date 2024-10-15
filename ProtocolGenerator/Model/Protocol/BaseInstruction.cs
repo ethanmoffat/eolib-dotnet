@@ -284,7 +284,7 @@ public abstract class BaseInstruction : IProtocolInstruction
             state.Text($"if ({Name}?.{countProperty} {op} {instructionLength})", indented: true);
             state.NewLine();
             state.BeginBlock();
-            state.Text($"throw new InvalidOperationException($\"Expected {Name} to have {errorExtra}{instructionLength} items, but was {{({Name}?.{countProperty} ?? 0)}}\");", indented: true);
+            state.Text($"throw new InvalidOperationException($\"Expected {Name} to have {errorExtra}{countProperty}={instructionLength}, but was {{({Name}?.{countProperty} ?? 0)}}\");", indented: true);
             state.NewLine();
             state.EndBlock();
         }
