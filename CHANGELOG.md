@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2024-10-15
+
+### Fixed
+- Updated AssertLength exception string to reference length property so the message makes more sense for string types with fixed or maximum lengths.
+
+### Updated
+- Pulled in minor fixes for eo-protocol (no impact to generated code):
+    - [TradeItemData data modeling update](https://github.com/Cirras/eo-protocol/commit/d2bf358503c4eeae24128ae205e9a50f2b86efe9)
+        - Including: [follow-up fix](https://github.com/Cirras/eo-protocol/commit/0e58893fd3102ec1bc4bdc61ae7d92c926c30cde)
+    - [Struct ordering in net/server/protocol.xml](https://github.com/Cirras/eo-protocol/commit/d59a8077d17d504bf1e71fe085fec1c3ba8e65d4)
+
 ## [1.0.0-rc3] - 2024-08-21
 
 ### Added
@@ -70,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc3...HEAD
+[Unreleased]:  http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0...HEAD
+[1.0.0]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc3...v1.0.0
 [1.0.0-rc3]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc2...v1.0.0-rc3
 [1.0.0-rc2]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc1...v1.0.0-rc2
 [1.0.0-rc1]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta4...v1.0.0-rc1
