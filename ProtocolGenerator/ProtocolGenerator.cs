@@ -224,6 +224,7 @@ public class ProtocolGenerator
         state.BeginBlock();
 
         var hasChunked = instructions.Any(x => x is ChunkedInstruction);
+        var hasDummy = instructions.Any(x => x is DummyInstruction);
 
         if (hasChunked)
         {
@@ -233,6 +234,12 @@ public class ProtocolGenerator
             state.Text("try", indented: true);
             state.NewLine();
             state.BeginBlock();
+        }
+
+        if (hasDummy && flattenedInstructions.Count > 2)
+        {
+            state.Text("var oldWriterLength = writer.Length;", indented: true);
+            state.NewLine();
         }
 
         foreach (var inst in instructions)

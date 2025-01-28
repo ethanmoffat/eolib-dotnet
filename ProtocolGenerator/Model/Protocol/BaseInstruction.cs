@@ -103,7 +103,14 @@ public abstract class BaseInstruction : IProtocolInstruction
     {
         if (TypeInfo.Optional)
         {
-            state.Text($"if (reader.Remaining > 0)", indented: true);
+            var dummyFollowsOptional = outerInstructions
+                .SkipWhile(x => x != this)
+                .Any(x => x is DummyInstruction);
+
+            var remainingSizeOp = dummyFollowsOptional ? ">=" : ">";
+            var remainingSizeCheck = dummyFollowsOptional ? TypeInfo.CalculateByteSize() : 0;
+
+            state.Text($"if (reader.Remaining {remainingSizeOp} {remainingSizeCheck})", indented: true);
             state.NewLine();
             state.BeginBlock();
 
