@@ -367,7 +367,7 @@ public class ProtocolGenerator
                     state.Text("&& ", indented: true);
                 }
 
-                inst.GenerateEquals(state, "rhs");
+                inst.GenerateEquals(state, "other");
 
                 if (memberIndex != instructionsWithProperties.Count - 1)
                 {
