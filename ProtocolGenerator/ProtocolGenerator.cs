@@ -342,7 +342,7 @@ public class ProtocolGenerator
         state.NewLine();
         state.NewLine();
 
-        state.Text($"if (this is not {typeName} rhs) return false;", indented: true);
+        state.Text($"if (other is not {typeName} rhs) return false;", indented: true);
         state.NewLine();
         state.NewLine();
 
@@ -367,7 +367,7 @@ public class ProtocolGenerator
                     state.Text("&& ", indented: true);
                 }
 
-                inst.GenerateEquals(state, "other");
+                inst.GenerateEquals(state, "rhs");
 
                 if (memberIndex != instructionsWithProperties.Count - 1)
                 {
