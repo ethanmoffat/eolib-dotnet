@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2025-07-01
+
+### Fixed
+- Updated Equals method generation to properly compare objects (thanks @do4k for PR #1)
+
 ## [1.0.1] - 2025-01-28
 
 ### Fixed
@@ -87,7 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]:  http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.1...HEAD
+[Unreleased]:  http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.2...HEAD
+[1.0.1]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.1...v1.0.2
 [1.0.1]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0...v1.0.1
 [1.0.0]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc3...v1.0.0
 [1.0.0-rc3]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc2...v1.0.0-rc3
