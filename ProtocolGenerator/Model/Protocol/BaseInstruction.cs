@@ -209,9 +209,10 @@ public abstract class BaseInstruction : IProtocolInstruction
             return;
 
         var isStruct = !TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct);
+        var isArray = TypeInfo.IsArray || TypeInfo.EoType.HasFlag(EoType.Blob);
 
         state.Text($"{Name}{(TypeInfo.IsNullable || isStruct ? $" == null ? {rhsIdentifier}.{Name} == null : {Name}" : string.Empty)}", indented: false);
-        state.MethodInvocation("Equals", $"{rhsIdentifier}.{Name}");
+        state.MethodInvocation(isArray ? "SequenceEqual" : "Equals", $"{rhsIdentifier}.{Name}");
     }
 
     protected string NameOrContent(string instructionName, string instructionContent)

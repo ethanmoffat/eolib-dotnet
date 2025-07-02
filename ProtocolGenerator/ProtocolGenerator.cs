@@ -346,7 +346,10 @@ public class ProtocolGenerator
         state.NewLine();
         state.NewLine();
 
-        var instructionsWithProperties = instructions.Where(x => x.HasProperty).ToList();
+        var instructionsWithProperties = instructions
+            .Where(x => x.HasProperty)
+            .Where(x => !(x.Name == "ByteSize" && x.TypeInfo.PropertyType == "int")) // ByteSize is only set on deserialization so it is ignored in equality checks
+            .ToList();
 
         if (instructionsWithProperties.Count > 0)
         {
