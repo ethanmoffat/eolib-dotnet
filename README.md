@@ -24,7 +24,7 @@ Utilities:
 
 ## Requirements
 
-- .NET 6.0.421+
+- .NET 8.0.x
 - Windows or Linux OS that supports .NET core
 
 ## Usage

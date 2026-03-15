@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-15
+
+### Updated
+- Updated to .Net 8.0 for pipelines and test project SDK version.
+- Pulled in changes for eo-protocol, with impact to generated code:
+    - [StatSkill data type fix](https://github.com/cirras/eo-protocol/commit/dee092d4a7f2bb379a71949cf3e59e352c4b1726)
+    - [Fix chunking in WELCOME_REPLY](https://github.com/cirras/eo-protocol/commit/9183c91a217f1316d80be4ef568702a89525d155)
+    - [Rename npc_index->behavior_id in QUEST_ACCEPT](https://github.com/cirras/eo-protocol/commit/3e09f6b02029a433d9758e237dbbff1493dd4a35)
+    - [Add Bard emote](https://github.com/cirras/eo-protocol/commit/6959edeb153e8874bf7783bbedfccc5c2217a518)
+- Pulled in fixes for eo-captured-packets for test parity with protocol changes.
+
 ## [1.0.2] - 2025-07-01
 
 ### Fixed
@@ -92,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]:  http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.2...HEAD
+[Unreleased]:  http://github.com/ethanmoffat/eolib-dotnet/compare/v1.1.0...HEAD
+[1.1.0]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.2...v1.1.0
 [1.0.1]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.1...v1.0.2
 [1.0.1]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0...v1.0.1
 [1.0.0]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc3...v1.0.0
