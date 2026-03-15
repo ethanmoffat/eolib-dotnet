@@ -19,7 +19,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 8.0.x
       - name: Set AssemblyInfo version
         uses: vers-one/dotnet-project-version-updater@v1.6
         with:
