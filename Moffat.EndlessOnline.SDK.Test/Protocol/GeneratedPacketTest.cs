@@ -27,11 +27,9 @@ public abstract class GeneratedPacketTest
     [Test]
     public void Serialize_CreatesExpectedByteStream()
     {
-        // todo: un-ignore these tests once conditions for break bytes in NearbyInfo are better understood
-        if ((_model.Family == PacketFamily.Range && _model.Action == PacketAction.Reply) ||
-            (_model.Family == PacketFamily.Players && _model.Action == PacketAction.Agree))
+        if (_isOriginal && _model.Family == PacketFamily.Players && _model.Action == PacketAction.Agree)
         {
-            Assert.Ignore($"Packet ID {_model.Family}_{_model.Action} has known Serialize issues");
+            Assert.Ignore($"Packet ID {_model.Family}_{_model.Action}{(_isOriginal ? " (original)" : "")} has known Serialize issues");
             return;
         }
 
