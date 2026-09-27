@@ -9,11 +9,18 @@ on:
     paths-ignore:
       - "CHANGELOG.md"
       - "README.md"
+      - "docs/**"
   pull_request:
     branches: ["master"]
     paths-ignore:
       - "CHANGELOG.md"
       - "README.md"
+      - "docs/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -24,7 +31,7 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true

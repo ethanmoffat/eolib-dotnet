@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Protocol updates: bumping eo-protocol changes the generated protocol code. Add a CHANGELOG.md entry when merging.
+  - package-ecosystem: gitsubmodule
+    directory: /
+    schedule:
+      interval: weekly
