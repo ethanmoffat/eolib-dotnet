@@ -203,6 +203,11 @@ public abstract class GeneratedPacketTest
         {
             const string AssemblyNameSuffix = ",Moffat.EndlessOnline.SDK";
 
+            // Top-level types may share the packet's family/action prefix (e.g. PartyRequestType for PARTY_REQUEST)
+            var topLevelType = Type.GetType($"{ns}.{tn}{AssemblyNameSuffix}");
+            if (topLevelType != null)
+                return topLevelType;
+
             var prefix = $"{_model.Family}{_model.Action}";
             if (tn.StartsWith(prefix) && tn != prefix)
             {
