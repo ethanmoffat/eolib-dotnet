@@ -27,6 +27,7 @@ public interface IPacket : ISerializable
 }";
 
     private const string GlobalUsings = @"global using Moffat.EndlessOnline.SDK.Data;
+global using Moffat.EndlessOnline.SDK.Protocol.Net.Client;
 global using Moffat.EndlessOnline.SDK.Protocol.Pub;";
 
     internal static void CreatePacketInterface(IncrementalGeneratorPostInitializationContext context)

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Updated
+- Pulled in changes for eo-protocol, with impact to generated code:
+    - [Change SpellTargetOther caster_direction -> target_type](https://github.com/cirras/eo-protocol/commit/0c0ea73c6a30833541ff4c53a4ebe87432ef359d)
+    - [Change LoginMessageCode.Yes 2->250](https://github.com/cirras/eo-protocol/commit/aaba85ffd101fdb848e28b90878f685f2b3c5450)
+- Pulled in fixes for eo-captured-packets for test parity with protocol changes.
+
+### Fixed
+- Generated server code can now reference types declared in the `Net.Client` namespace.
+
 ## [1.1.0] - 2026-03-15
 
 ### Updated
