@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
@@ -95,7 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for doc comments in nuget package
 
-## 1.0.0-beta1 - 2024-05-14
+## [1.0.0-beta1] - 2024-05-14
 
 ### Added
 
@@ -112,14 +112,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]:  http://github.com/ethanmoffat/eolib-dotnet/compare/v1.1.0...HEAD
-[1.1.0]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.2...v1.1.0
-[1.0.1]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.1...v1.0.2
-[1.0.1]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0...v1.0.1
-[1.0.0]:       http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc3...v1.0.0
-[1.0.0-rc3]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc2...v1.0.0-rc3
-[1.0.0-rc2]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-rc1...v1.0.0-rc2
-[1.0.0-rc1]:   http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta4...v1.0.0-rc1
-[1.0.0-beta4]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta3...v1.0.0-beta4
-[1.0.0-beta3]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta2...v1.0.0-beta3
-[1.0.0-beta2]: http://github.com/ethanmoffat/eolib-dotnet/compare/v1.0.0-beta1...v1.0.0-beta2
+[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.1.0
+[1.0.2]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.2
+[1.0.1]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.1
+[1.0.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0
+[1.0.0-rc3]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-rc3
+[1.0.0-rc2]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-rc2
+[1.0.0-rc1]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-rc1
+[1.0.0-beta4]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-beta4
+[1.0.0-beta3]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-beta3
+[1.0.0-beta2]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-beta2
+[1.0.0-beta1]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.0-beta1

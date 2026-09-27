@@ -52,3 +52,22 @@ This package is referenced by the [EndlessClient](https://www.github.com/ethanmo
     ```
     dotnet test
     ```
+
+## Versioning and releases
+
+eolib-dotnet uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`, with an optional `-beta.N` or
+`-rc.N` suffix). Changes are tracked in [CHANGELOG.md](CHANGELOG.md), following
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+To release a new version:
+
+1. Make sure the `[Unreleased]` section of `CHANGELOG.md` lists the changes.
+2. Run `./scripts/prepare-release.sh x.y.z-suffix --tag`. It updates every file that references the version
+   (`<Version>` in `Moffat.EndlessOnline.SDK.csproj`, the versions in `Properties/AssemblyInfo.cs`, and the changelog
+   section and links), runs `scripts/validate-release.sh`, commits the changes as "Release x.y.z-suffix" and creates
+   the tag. Use `--commit` to commit without tagging, `--date` to set the changelog date, or no option to only update
+   the files for review.
+3. Push master, and wait for CI to pass.
+4. Push the tag `vx.y.z-suffix`. The release workflow runs `validate-release.sh` again, which also checks that the
+   commit is on `origin/master`, before building anything. It then builds, tests and publishes the NuGet package, and
+   publishes a GitHub release. It is marked as a prerelease when the version has a suffix.

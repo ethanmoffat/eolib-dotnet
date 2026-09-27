@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
+        <Version>1.1.0</Version>
         <Authors>Ethan Moffat</Authors>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
