@@ -7,9 +7,9 @@ public class DummyInstruction : BaseInstruction
 {
     public override bool HasProperty => false;
 
-    public DummyInstruction(Xml.ProtocolDummyInstruction xmlDummyInstruction)
+    public DummyInstruction(Xml.ProtocolDummyInstruction xmlDummyInstruction, TypeMapper typeMapper)
     {
-        TypeInfo = new TypeInfo(xmlDummyInstruction.Type);
+        TypeInfo = new TypeInfo(typeMapper, xmlDummyInstruction.Type);
         Name = NameOrContent(string.Empty, xmlDummyInstruction.Content);
     }
 

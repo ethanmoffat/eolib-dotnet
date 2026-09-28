@@ -11,11 +11,12 @@ public class FieldInstruction : BaseInstruction
 
     protected override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
 
-    public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction)
+    public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction, TypeMapper typeMapper)
     {
         _xmlFieldInstruction = xmlFieldInstruction;
 
         TypeInfo = new TypeInfo(
+            typeMapper,
             _xmlFieldInstruction.Type,
             optional: _xmlFieldInstruction.Optional.HasValue && _xmlFieldInstruction.Optional.Value,
             padded: _xmlFieldInstruction.Padded.HasValue && _xmlFieldInstruction.Padded.Value,

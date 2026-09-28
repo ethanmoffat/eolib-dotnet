@@ -12,11 +12,12 @@ public class LengthInstruction : BaseInstruction
 
     protected override bool DeserializeToLocal => IsReadOnly;
 
-    public LengthInstruction(Xml.ProtocolLengthInstruction xmlLengthInstruction)
+    public LengthInstruction(Xml.ProtocolLengthInstruction xmlLengthInstruction, TypeMapper typeMapper)
     {
         _xmlLengthInstruction = xmlLengthInstruction;
 
         TypeInfo = new TypeInfo(
+            typeMapper,
             _xmlLengthInstruction.Type,
             optional: _xmlLengthInstruction.Optional.HasValue && _xmlLengthInstruction.Optional.Value
         );

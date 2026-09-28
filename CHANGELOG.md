@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Generated server code can now reference types declared in the `Net.Client` namespace.
+- The protocol generator no longer reports `EO0003` duplicate type warnings, or generates code from stale protocol
+  types, when the compiler server or IDE runs the generator more than once in the same process.
 
 ## [1.1.0] - 2026-03-15
 

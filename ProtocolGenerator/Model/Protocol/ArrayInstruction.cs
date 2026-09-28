@@ -8,12 +8,12 @@ public class ArrayInstruction : BaseInstruction
 {
     private readonly Xml.ProtocolArrayInstruction _xmlArrayInstruction;
 
-    public ArrayInstruction(Xml.ProtocolArrayInstruction xmlArrayInstruction)
+    public ArrayInstruction(Xml.ProtocolArrayInstruction xmlArrayInstruction, TypeMapper typeMapper)
     {
         _xmlArrayInstruction = xmlArrayInstruction;
 
         var optional = _xmlArrayInstruction.Optional.HasValue && _xmlArrayInstruction.Optional.Value;
-        TypeInfo = new TypeInfo(_xmlArrayInstruction.Type, isArray: true, optional: optional);
+        TypeInfo = new TypeInfo(typeMapper, _xmlArrayInstruction.Type, isArray: true, optional: optional);
 
         Name = IdentifierConverter.SnakeCaseToPascalCase(_xmlArrayInstruction.Name);
         Comment = _xmlArrayInstruction.Comment;

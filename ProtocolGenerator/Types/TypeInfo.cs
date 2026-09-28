@@ -22,33 +22,39 @@ public class TypeInfo
 
     public bool IsEnum { get; }
 
+    public bool IsStruct { get; }
+
     public bool IsNullable { get; }
 
-    public TypeInfo(string rawType, bool isArray = false, bool isInterface = false, bool optional = false, bool padded = false, bool @fixed = false)
+    private readonly TypeMapper _typeMapper;
+
+    public TypeInfo(TypeMapper typeMapper, string rawType, bool isArray = false, bool isInterface = false, bool optional = false, bool padded = false, bool @fixed = false)
     {
+        _typeMapper = typeMapper;
+
         ProtocolTypeName = GetTypeName(rawType);
         ProtocolTypeSize = GetTypeSize(rawType);
 
         EoType = ProtocolTypeName.ToEoType(padded, @fixed);
 
-        var isStruct = TypeMapper.Instance.HasStruct(ProtocolTypeName);
-        PropertyType = GetDotNetType(ProtocolTypeName, isArray, optional, isStruct);
+        IsStruct = _typeMapper.HasStruct(ProtocolTypeName);
+        PropertyType = GetDotNetType(ProtocolTypeName, isArray, optional, IsStruct);
         IsArray = isArray;
         IsInterface = isInterface;
         Optional = optional;
-        IsEnum = TypeMapper.Instance.HasEnum(ProtocolTypeName);
+        IsEnum = _typeMapper.HasEnum(ProtocolTypeName);
 
         IsNullable = PropertyType.Contains("List") ||
             PropertyType.Contains("string") ||
             PropertyType.Contains("[]") ||
             PropertyType.Contains("?") ||
-            isStruct;
+            IsStruct;
     }
 
     public string GetSerializeMethodName()
     {
         var type = IsEnum
-            ? TypeMapper.Instance.GetEnum(ProtocolTypeName).ToEoType()
+            ? _typeMapper.GetEnum(ProtocolTypeName).ToEoType()
             : EoType;
 
         if (type.HasFlag(EoType.Primitive) && !string.IsNullOrWhiteSpace(ProtocolTypeSize))
@@ -98,7 +104,7 @@ public class TypeInfo
     public string GetDeserializeMethodName()
     {
         var type = IsEnum
-            ? TypeMapper.Instance.GetEnum(ProtocolTypeName).ToEoType()
+            ? _typeMapper.GetEnum(ProtocolTypeName).ToEoType()
             : EoType;
 
         if (type.HasFlag(EoType.Primitive) && !string.IsNullOrWhiteSpace(ProtocolTypeSize))
@@ -146,13 +152,13 @@ public class TypeInfo
     public int CalculateByteSize()
     {
         var typeName = string.IsNullOrWhiteSpace(ProtocolTypeSize) ? ProtocolTypeName : ProtocolTypeSize;
-        if (TypeMapper.Instance.HasStruct(typeName))
+        if (_typeMapper.HasStruct(typeName))
         {
-            return CalculateByteSize(TypeMapper.Instance.GetStruct(typeName).Instructions);
+            return CalculateByteSize(_typeMapper.GetStruct(typeName).Instructions);
         }
-        else if (TypeMapper.Instance.HasEnum(typeName))
+        else if (_typeMapper.HasEnum(typeName))
         {
-            typeName = TypeMapper.Instance.GetEnum(typeName);
+            typeName = _typeMapper.GetEnum(typeName);
         }
         else if (EoType.HasFlag(EoType.Complex))
         {
@@ -202,7 +208,7 @@ public class TypeInfo
             : string.Empty;
     }
 
-    private static int CalculateByteSize(IReadOnlyList<object> instructions)
+    private int CalculateByteSize(IReadOnlyList<object> instructions)
     {
         var flattenedInstructions = new List<object>();
         foreach (var inst in instructions)
@@ -247,11 +253,11 @@ public class TypeInfo
                 if (!int.TryParse(length, out var lengthInt))
                     throw new ArgumentException($"Length must be a fixed size for {typeName}");
 
-                ret += new TypeInfo(typeName).CalculateByteSize() * lengthInt;
+                ret += new TypeInfo(_typeMapper, typeName).CalculateByteSize() * lengthInt;
             }
             else
             {
-                ret += new TypeInfo(typeName).CalculateByteSize();
+                ret += new TypeInfo(_typeMapper, typeName).CalculateByteSize();
             }
         }
 

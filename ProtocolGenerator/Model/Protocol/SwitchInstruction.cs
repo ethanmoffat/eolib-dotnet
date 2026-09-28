@@ -9,11 +9,11 @@ public class SwitchInstruction : BaseInstruction
     private readonly Xml.ProtocolSwitchInstruction _xmlSwitchInstruction;
     private readonly string _fieldName;
 
-    public SwitchInstruction(Xml.ProtocolSwitchInstruction xmlSwitchInstruction)
+    public SwitchInstruction(Xml.ProtocolSwitchInstruction xmlSwitchInstruction, TypeMapper typeMapper)
     {
         _xmlSwitchInstruction = xmlSwitchInstruction;
 
-        TypeInfo = new TypeInfo(GetSwitchInterfaceType(_xmlSwitchInstruction.Field), isInterface: true);
+        TypeInfo = new TypeInfo(typeMapper, GetSwitchInterfaceType(_xmlSwitchInstruction.Field), isInterface: true);
         Name = GetSwitchInterfaceMemberName(_xmlSwitchInstruction.Field);
         _fieldName = IdentifierConverter.SnakeCaseToPascalCase(_xmlSwitchInstruction.Field);
     }

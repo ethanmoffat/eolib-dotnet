@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
+using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator.Model.Protocol;
 
 public class ChunkedInstruction : BaseInstruction
 {
-    public ChunkedInstruction(Xml.ProtocolChunkedInstruction xmlChunkedInstruction)
+    public ChunkedInstruction(Xml.ProtocolChunkedInstruction xmlChunkedInstruction, TypeMapper typeMapper)
     {
-        Instructions = xmlChunkedInstruction.Instructions.Select(ProtocolInstructionFactory.Transform).ToList();
+        Instructions = xmlChunkedInstruction.Instructions.Select(x => ProtocolInstructionFactory.Transform(typeMapper, x)).ToList();
     }
 
     public override List<Xml.ProtocolStruct> GetNestedTypes()

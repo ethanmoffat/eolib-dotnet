@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.CodeAnalysis.Text;
 using ProtocolGenerator.Model.Protocol;
 using ProtocolGenerator.Model.Xml;
+using ProtocolGenerator.Types;
 
 namespace ProtocolGenerator;
 
@@ -16,6 +17,7 @@ public class ProtocolGenerator
     private readonly ProtocolGeneratorOptions _options;
     private readonly string _filePath;
     private readonly ProtocolSpec _fullSpec;
+    private readonly TypeMapper _typeMapper;
 
     public string HintName
     {
@@ -43,11 +45,12 @@ public class ProtocolGenerator
         }
     }
 
-    public ProtocolGenerator(ProtocolGeneratorOptions options, string filePath, ProtocolSpec fullSpec)
+    public ProtocolGenerator(ProtocolGeneratorOptions options, string filePath, ProtocolSpec fullSpec, TypeMapper typeMapper)
     {
         _options = options;
         _filePath = filePath;
         _fullSpec = fullSpec;
+        _typeMapper = typeMapper;
     }
 
     public SourceText Generate()
@@ -113,7 +116,7 @@ public class ProtocolGenerator
             GenerateStructureImplementation(
                 state,
                 inputType.Name,
-            inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList()
+            inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(_typeMapper, x)).ToList()
             );
         }
         state.EndBlock();
@@ -153,7 +156,7 @@ public class ProtocolGenerator
         GenerateStructureImplementation(
             state,
             typeName,
-            inputType.Instructions.Select(ProtocolInstructionFactory.Transform).ToList()
+            inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(_typeMapper, x)).ToList()
         );
         state.EndBlock();
     }
@@ -199,7 +202,7 @@ public class ProtocolGenerator
         }
 
         var flattenedInstructions = Flatten(instructions);
-        flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }));
+        flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }, _typeMapper));
 
         GenerateSerialize(state, instructions, flattenedInstructions);
         state.NewLine();

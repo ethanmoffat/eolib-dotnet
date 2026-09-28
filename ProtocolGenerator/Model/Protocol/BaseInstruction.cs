@@ -300,10 +300,10 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     private string GetDefaultValueForDeserialize()
     {
-        if (TypeMapper.Instance.HasEnum(TypeInfo.ProtocolTypeName))
+        if (TypeInfo.IsEnum)
             return $"({TypeInfo.ProtocolTypeName})0";
 
-        if (TypeMapper.Instance.HasStruct(TypeInfo.ProtocolTypeName))
+        if (TypeInfo.IsStruct)
             return $"new {TypeInfo.ProtocolTypeName}()";
 
         return TypeInfo.EoType.HasFlag(EoType.String)

@@ -52,6 +52,8 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
 
         context.ReportDiagnostic(Diagnostic.Create(ddForGeneration, Location.None, options.InputDirectory));
 
+        // A new TypeMapper per run: the compiler server and IDE reuse the generator instance across compilations
+        var typeMapper = new TypeMapper();
         var parsedFiles = new List<(string Path, ProtocolSpec Spec)>();
         foreach (var file in filesFiltered)
         {
@@ -63,7 +65,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
 
             foreach (var e in model.Enums)
             {
-                if (!TypeMapper.Instance.RegisterEnum(e.Name, e.Type))
+                if (!typeMapper.RegisterEnum(e.Name, e.Type))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(ddDuplicateTypeWarning, Location.None, e.Name));
                 }
@@ -71,7 +73,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
 
             foreach (var s in model.Structs)
             {
-                if (!TypeMapper.Instance.RegisterStruct(s.Name, s))
+                if (!typeMapper.RegisterStruct(s.Name, s))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(ddDuplicateTypeWarning, Location.None, s.Name));
                 }
@@ -84,7 +86,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
         {
             context.ReportDiagnostic(Diagnostic.Create(ddForFile, Location.None, file.Path));
 
-            var generator = new ProtocolGenerator(options, file.Path, file.Spec);
+            var generator = new ProtocolGenerator(options, file.Path, file.Spec, typeMapper);
             context.AddSource(
                 generator.HintName,
                 generator.Generate());
