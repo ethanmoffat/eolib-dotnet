@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-28
+
 ### Added
 - An API reference site at https://ethanmoffat.github.io/eolib-dotnet/, built with DocFX, with a summary page, a getting
   started guide, namespace descriptions and a version picker. It has the newest release of each minor version. Each
@@ -124,7 +126,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.2.0
 [1.1.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.1.0
 [1.0.2]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.2
 [1.0.1]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.1
