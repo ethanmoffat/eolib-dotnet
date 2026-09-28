@@ -61,7 +61,7 @@ jobs:
           path: release
           submodules: true
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
       - name: Build docs
