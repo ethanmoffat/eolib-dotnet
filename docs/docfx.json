@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "@EOLIB_DOCS_ASSEMBLY_DIR@",
+          "files": ["Moffat.EndlessOnline.SDK.dll"]
+        }
+      ],
+      "output": "api",
+      "namespaceLayout": "flattened",
+      "memberLayout": "samePage",
+      "enumSortOrder": "declaringOrder"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": ["index.md", "getting-started.md", "toc.yml"]
+      },
+      {
+        "files": ["api/*.yml", "api/toc.yml"]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": ["namespaces/*.md"]
+      }
+    ],
+    "output": "@EOLIB_DOCS_OUTPUT_DIR@",
+    "template": ["default", "modern"],
+    "globalMetadata": {
+      "_appName": "eolib-dotnet",
+      "_appTitle": "eolib-dotnet @EOLIB_DOCS_VERSION@",
+      "_appFooter": "eolib-dotnet @EOLIB_DOCS_VERSION@ API reference",
+      "_enableSearch": true,
+      "_disableContribution": true,
+      "pdf": false
+    },
+    "warningsAsErrors": @EOLIB_DOCS_WARN_AS_ERROR@
+  }
+}

@@ -4,6 +4,7 @@ Core library for writing Endless Online applications using .NET core.
 
 [![build](https://github.com/ethanmoffat/eolib-dotnet/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/ethanmoffat/eolib-dotnet/actions/workflows/build.yml)
 [![Nuget](https://badgen.net/nuget/v/Moffat.EndlessOnline.SDK?icon=nuget)](https://www.nuget.org/packages/Moffat.EndlessOnline.SDK/)
+[![Docs](https://img.shields.io/badge/docs-API%20reference-blue)](https://ethanmoffat.github.io/eolib-dotnet/)
 
 ## Features
 
@@ -39,7 +40,8 @@ dotnet add package Moffat.EndlessOnline.SDK
 
 ### Sample code
 
-This package is referenced by the [EndlessClient](https://www.github.com/ethanmoffat/EndlessClient) project.
+See the [getting started guide](docs/getting-started.md). This package is referenced by the
+[EndlessClient](https://www.github.com/ethanmoffat/EndlessClient) project.
 
 ### Building from source
 
@@ -52,6 +54,20 @@ This package is referenced by the [EndlessClient](https://www.github.com/ethanmo
     ```
     dotnet test
     ```
+
+### Building the docs
+
+The [API reference](https://ethanmoffat.github.io/eolib-dotnet/) is built with [DocFX](https://dotnet.github.io/docfx/),
+using the configuration and pages in `docs/`. DocFX is installed as a local .NET tool (`.config/dotnet-tools.json`).
+
+```sh
+./scripts/build-docs.sh                    # writes build/docs/html
+./scripts/serve-docs.sh                    # builds the docs and serves the site at http://localhost:8000
+./scripts/serve-docs.sh --releases         # also includes the published releases, to check the version picker
+```
+
+`serve-docs.sh` shows the working tree as `<version>-local`, next to the published versions. Only releases are
+published: the docs site is not updated for changes on master.
 
 ## Versioning and releases
 
@@ -70,4 +86,6 @@ To release a new version:
 3. Push master, and wait for CI to pass.
 4. Push the tag `vx.y.z-suffix`. The release workflow runs `validate-release.sh` again, which also checks that the
    commit is on `origin/master`, before building anything. It then builds, tests and publishes the NuGet package, and
-   publishes a GitHub release. It is marked as a prerelease when the version has a suffix.
+   publishes a GitHub release. It is marked as a prerelease when the version has a suffix. The release includes the API
+   reference (`Moffat.EndlessOnline.SDK-<version>-docs.tar.gz`), and the Pages workflow then publishes it to the
+   [docs site](https://ethanmoffat.github.io/eolib-dotnet/).

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- An API reference site for each release at https://ethanmoffat.github.io/eolib-dotnet/, built with DocFX, with a
+  summary page, a getting started guide, namespace descriptions and a version picker. Each release also includes the
+  docs as `Moffat.EndlessOnline.SDK-<version>-docs.tar.gz`.
+- `scripts/serve-docs.sh`, which builds the docs site for the working tree and serves it on localhost.
+
 ### Updated
 - Pulled in changes for eo-protocol, with impact to generated code:
     - [Change SpellTargetOther caster_direction -> target_type](https://github.com/cirras/eo-protocol/commit/0c0ea73c6a30833541ff4c53a4ebe87432ef359d)

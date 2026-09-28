@@ -1,0 +1,104 @@
+name: Pages
+
+# Publishes the docs of every release to GitHub Pages. Each release has its docs attached as
+# Moffat.EndlessOnline.SDK-<version>-docs.tar.gz (built by the release workflow), and the site is reassembled from all
+# of them on every deployment. Releases without a docs archive (published before the docs existed) have it built from
+# their tag and attached first.
+
+on:
+  workflow_run:
+    workflows: ["Release new version"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  find-missing:
+    name: Find releases without docs
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.missing.outputs.tags }}
+    steps:
+      - name: List releases without a docs archive
+        id: missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tags="$(gh release list --limit 1000 --exclude-drafts --json tagName --jq '.[].tagName' \
+            | while read -r tag; do
+                if ! gh release view "${tag}" --json assets --jq '.assets[].name' | grep -q -- '-docs\.tar\.gz$'; then
+                  echo "${tag}"
+                fi
+              done | jq -R . | jq -s -c .)"
+          echo "Releases without docs: ${tags}"
+          echo "tags=${tags}" >> "${GITHUB_OUTPUT}"
+
+  backfill:
+    name: Build docs for ${{ matrix.tag }}
+    needs: find-missing
+    if: needs.find-missing.outputs.tags != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{ fromJSON(needs.find-missing.outputs.tags) }}
+    steps:
+      # The docs configuration and scripts come from the default branch, and the code from the release tag.
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ matrix.tag }}
+          path: release
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build docs
+        env:
+          TAG: ${{ matrix.tag }}
+        run: >
+          ./scripts/build-docs.sh --source release --version "${TAG#v}"
+          --archive "Moffat.EndlessOnline.SDK-${TAG#v}-docs.tar.gz"
+      - name: Attach docs to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ matrix.tag }}
+        run: gh release upload "${TAG}" "Moffat.EndlessOnline.SDK-${TAG#v}-docs.tar.gz"
+
+  deploy:
+    name: Deploy
+    needs: [find-missing, backfill]
+    if: always() && needs.find-missing.result == 'success' && needs.backfill.result != 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          ./scripts/build-site.sh --releases --repo "${{ github.repository }}"
+          --input _docs --output _site --title eolib-dotnet
+          --base-path "/${{ github.event.repository.name }}/"
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

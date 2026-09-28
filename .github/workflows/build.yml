@@ -9,13 +9,11 @@ on:
     paths-ignore:
       - "CHANGELOG.md"
       - "README.md"
-      - "docs/**"
   pull_request:
     branches: ["master"]
     paths-ignore:
       - "CHANGELOG.md"
       - "README.md"
-      - "docs/**"
   workflow_dispatch:
 
 concurrency:
@@ -45,3 +43,17 @@ jobs:
         run: dotnet build --no-restore --no-incremental
       - name: Test
         run: dotnet test --no-build --verbosity normal
+
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build docs
+        run: ./scripts/build-docs.sh --warnings-as-errors
