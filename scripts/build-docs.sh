@@ -97,6 +97,12 @@ done
 (cd "${REPO_ROOT}" && dotnet tool restore > /dev/null)
 echo "Building the docs for Moffat.EndlessOnline.SDK ${VERSION}..."
 (cd "${REPO_ROOT}" && dotnet tool run docfx "${CONFIG_DIR}/docfx.json")
+
+# Keep each version small on the docs site. The pages don't use these files: the source maps of the template's scripts
+# and styles, and the cross reference map and manifest, which are for other DocFX projects and incremental builds.
+find "${OUTPUT_DIR}" -name '*.map' -delete
+rm -f "${OUTPUT_DIR}/xrefmap.yml" "${OUTPUT_DIR}/manifest.json"
+
 echo "${VERSION}" > "${OUTPUT_DIR}/version.txt"
 
 if [[ -n "${ARCHIVE}" ]]; then

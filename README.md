@@ -67,7 +67,9 @@ using the configuration and pages in `docs/`. DocFX is installed as a local .NET
 ```
 
 `serve-docs.sh` shows the working tree as `<version>-local`, next to the published versions. Only releases are
-published: the docs site is not updated for changes on master.
+published: the docs site is not updated for changes on master. To keep the site small, it has the newest release of
+each minor version, plus the prereleases of versions that aren't released yet. The docs of every release stay attached
+to the release as a `-docs.tar.gz` archive.
 
 ## Versioning and releases
 

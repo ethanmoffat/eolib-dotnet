@@ -6,9 +6,14 @@
 # --releases, the docs archive attached to each published GitHub release is downloaded into it first. The site gets:
 #
 #   /<version>/     the docs for each version, with a version picker added to every page
-#   /latest/        the newest release (the newest prerelease if there are no stable releases yet)
+#   /latest/        redirect pages to the same page of the newest release (the newest prerelease if there are no
+#                   stable releases yet)
 #   /versions.json  the list of versions, read by the version picker
 #   /index.html     redirects to latest/
+#
+# To keep the site small, only the newest release of each minor version is published, along with the prereleases of
+# versions that aren't released yet. For example, 1.0.2 replaces 1.0.0 and 1.0.1, and 1.1.0 replaces 1.1.0-rc.1. The
+# docs of every release remain available in its docs archive. --all-versions publishes every version instead.
 #
 # This script is identical in eolib-cpp and eolib-dotnet.
 
@@ -23,6 +28,7 @@ REPO=""
 RELEASES=false
 LATEST=""
 BASE_PATH="/"
+ALL_VERSIONS=false
 
 function display_usage() {
     echo "Usage:"
@@ -37,6 +43,7 @@ function display_usage() {
     echo "  --repo <owner/name> Repository to download releases from [default: the current gh repository]"
     echo "  --latest <version>  Version that latest/ points to [default: the newest release]"
     echo "  --base-path <path>  URL path the site is served from, used by the not found page [default: /]"
+    echo "  --all-versions      Publish every version, instead of only the newest release of each minor version"
     echo "  -h --help           Display this message"
 }
 
@@ -50,6 +57,7 @@ do
         --repo)        REPO="${2}"; shift ;;
         --latest)      LATEST="${2}"; shift ;;
         --base-path)   BASE_PATH="${2}"; shift ;;
+        --all-versions) ALL_VERSIONS=true ;;
         -h|--help)     display_usage; exit 0 ;;
         *)
             >&2 echo "Error: unsupported option \"${1}\""
@@ -153,6 +161,26 @@ if [[ ! -d "${INPUT_DIR}/${LATEST}" ]]; then
     exit 1
 fi
 
+# Keeps the newest release of each minor version, and the prereleases newer than it. The versions are sorted newest
+# first, so a version is kept if no release of its minor version has been seen yet. The latest version is always kept.
+if [[ "${ALL_VERSIONS}" != "true" ]]; then
+    kept=()
+    released=" "
+    for version in "${versions[@]}"; do
+        core="${version%%-*}"
+        minor="${core%.*}"
+        if [[ "${version}" == "${LATEST}" || "${released}" != *" ${minor} "* ]]; then
+            kept+=("${version}")
+        else
+            echo "Skipping ${version}, which is replaced by a newer release"
+        fi
+        if [[ "${version}" != *-* ]]; then
+            released+="${minor} "
+        fi
+    done
+    versions=("${kept[@]}")
+fi
+
 rm -rf "${OUTPUT_DIR}"
 mkdir -p "${OUTPUT_DIR}"
 
@@ -167,8 +195,26 @@ for version in "${versions[@]}"; do
     done < <(find "${OUTPUT_DIR}/${version}" -name '*.html' -print0)
 done
 
-# A symlink keeps the site small; actions/upload-pages-artifact and local HTTP servers follow it.
-ln -s "${LATEST}" "${OUTPUT_DIR}/latest"
+# latest/ has a small redirect page for each page of the latest version, rather than a copy of it: GitHub Pages doesn't
+# support symlinks (actions/upload-pages-artifact copies their targets).
+while IFS= read -r -d '' file; do
+    page="${file#"${INPUT_DIR}/${LATEST}"/}"
+    target="$(root_path "latest/${page}")${LATEST}/${page}"
+    mkdir -p "$(dirname "${OUTPUT_DIR}/latest/${page}")"
+    cat > "${OUTPUT_DIR}/latest/${page}" << EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>${TITLE} documentation</title>
+<link rel="canonical" href="${target}">
+<script>window.location.replace("${target}" + window.location.search + window.location.hash);</script>
+<meta http-equiv="refresh" content="0; url=${target}">
+</head>
+<body><p>Redirecting to <a href="${target}">${TITLE} ${LATEST}</a>.</p></body>
+</html>
+EOF
+done < <(find "${INPUT_DIR}/${LATEST}" -name '*.html' -print0)
 
 {
     echo "["
