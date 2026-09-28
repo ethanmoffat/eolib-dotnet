@@ -55,6 +55,9 @@ jobs:
     # Wait for the docs, so a docs failure stops the release before anything is published
     needs: [validate, docs]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -72,11 +75,18 @@ jobs:
         run: dotnet test -c Release --no-build
       - name: Pack NuGet package
         run: dotnet pack Moffat.EndlessOnline.SDK/Moffat.EndlessOnline.SDK.csproj -c Release --no-build --no-restore -o ${{ github.workspace }}/pkgs
-      - name: Push to NuGet
-        uses: edumserrano/nuget-push@v1.2.2
+      # Trusted publishing: exchanges the GitHub OIDC token for a short-lived nuget.org API key
+      - name: NuGet login
+        id: nuget-login
+        uses: NuGet/login@v1
         with:
-          api-key: "${{ secrets.NUGET_PUSH_API_KEY }}"
-          nuget-package: ${{ github.workspace }}/pkgs/*.nupkg
+          user: ${{ secrets.NUGET_USER }}
+      - name: Push to NuGet
+        run: >
+          dotnet nuget push "${{ github.workspace }}/pkgs/*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
 
   github-release:
     name: GitHub release
