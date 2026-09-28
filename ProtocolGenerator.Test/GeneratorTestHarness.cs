@@ -24,7 +24,7 @@ internal static class GeneratorTestHarness
     public static GeneratorDriverRunResult Run(ProtocolIncrementalGenerator generator, params (string RelativePath, string Xml)[] files)
     {
         var additionalTexts = files
-            .Select(f => (AdditionalText)new InMemoryAdditionalText(Path.Combine(ProjectRoot, InputDirectory, f.RelativePath), f.Xml))
+            .Select(f => (AdditionalText)new InMemoryAdditionalText(Path.Combine(ProjectRoot, InputDirectory, f.RelativePath.Replace('/', Path.DirectorySeparatorChar)), f.Xml))
             .ToImmutableArray();
 
         var driver = CSharpGeneratorDriver.Create(
