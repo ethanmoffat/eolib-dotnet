@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -49,6 +50,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
         var ddForGeneration = new DiagnosticDescriptor("EO0001", "EO Protocol Generation", "Generating EO protocol from {0}", "EO.Generation", DiagnosticSeverity.Info, true);
         var ddForFile = new DiagnosticDescriptor("EO0002", "EO Protocol File Info", "Generating protocol for: {0}", "EO.Generation", DiagnosticSeverity.Info, true);
         var ddDuplicateTypeWarning = new DiagnosticDescriptor("EO0003", "EO Protocol duplicate type", "Duplicate protocol type detected: {0}", "EO.Generation", DiagnosticSeverity.Warning, true);
+        var ddInvalidProtocolError = new DiagnosticDescriptor("EO0004", "EO Protocol invalid", "Invalid protocol in {0}: {1}", "EO.Generation", DiagnosticSeverity.Error, true);
 
         context.ReportDiagnostic(Diagnostic.Create(ddForGeneration, Location.None, options.InputDirectory));
 
@@ -80,6 +82,20 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
             }
 
             parsedFiles.Add((file.Path, model));
+        }
+
+        var validator = new ProtocolValidator(typeMapper);
+        foreach (var file in parsedFiles)
+        {
+            try
+            {
+                validator.Validate(file.Spec);
+            }
+            catch (InvalidOperationException ex)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(ddInvalidProtocolError, Location.None, file.Path, ex.Message));
+                return;
+            }
         }
 
         foreach (var file in parsedFiles)

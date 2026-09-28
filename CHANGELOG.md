@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   started guide, namespace descriptions and a version picker. It has the newest release of each minor version. Each
   release also includes the docs as `Moffat.EndlessOnline.SDK-<version>-docs.tar.gz`.
 - `scripts/serve-docs.sh`, which builds the docs site for the working tree and serves it on localhost.
+- The protocol generator now validates the protocol XML and reports error `EO0004` for spec rule violations: misplaced
+  unsized arrays, dummies or default cases, required fields after optional fields, delimited arrays outside chunked
+  sections, invalid switch fields and duplicate case values, invalid `length`/`padded` usage, invalid underlying types,
+  and length fields referenced more than once.
 
 ### Updated
 - Pulled in changes for eo-protocol, with impact to generated code:
