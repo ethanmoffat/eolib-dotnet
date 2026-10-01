@@ -37,12 +37,60 @@ public class ProtocolCommentGenerationTest
         Assert.That(source, Does.Contain(
             "/// <summary>\n/// The struct\n/// </summary>\n" +
             "/// <remarks>\n" +
-            "/// <para>\n/// about the unnamed field\n/// </para>\n" +
-            "/// <para>\n/// about the break\n/// </para>\n" +
-            "/// <para>\n/// about the dummy\n/// </para>\n" +
+            "/// <para>\n/// The break byte after <see cref=\"A\"/>: about the break\n/// </para>\n" +
+            "/// <para>\n/// The dummy byte after <see cref=\"A\"/> (always 0): about the dummy\n/// </para>\n" +
             "/// </remarks>\n" +
             "[Generated]\npublic class S"));
         Assert.That(source, Does.Not.Contain("        // about"));
+        Assert.That(source, Does.Not.Contain("about the unnamed field"));
+    }
+
+    [Test]
+    public void Generate_CommentOnUnnamedInstructions_DescribesInstructionAndPosition()
+    {
+        var source = Generate(@"
+<struct name=""S"">
+    <length name=""items_count"" type=""char""/>
+    <!-- about the chunked section -->
+    <chunked>
+        <array name=""items"" type=""char"" length=""items_count""/>
+        <!-- about the break -->
+        <break/>
+        <!-- about the string -->
+        <dummy type=""string"">ABC</dummy>
+    </chunked>
+</struct>");
+
+        Assert.That(source, Does.Contain(
+            "/// <para>\n/// The chunked section before <see cref=\"Items\"/>: about the chunked section\n/// </para>\n" +
+            "/// <para>\n/// The break byte after <see cref=\"Items\"/>: about the break\n/// </para>\n" +
+            "/// <para>\n/// The dummy string after <see cref=\"Items\"/> (always \"ABC\"): about the string\n/// </para>\n"));
+    }
+
+    [Test]
+    public void Generate_CommentOnUnnamedInstructionWithoutProperties_HasNoPosition()
+    {
+        var source = Generate(@"
+<struct name=""S"">
+    <!-- about the dummy -->
+    <dummy type=""short"">1</dummy>
+</struct>");
+
+        Assert.That(source, Does.Contain("/// <para>\n/// The dummy short (always 1): about the dummy\n/// </para>\n"));
+    }
+
+    [Test]
+    public void Generate_CommentOnUnnamedField_Skipped()
+    {
+        var source = Generate(@"
+<struct name=""S"">
+    <field name=""a"" type=""char""/>
+    <!-- unused -->
+    <field type=""char"">0</field>
+</struct>");
+
+        Assert.That(source, Does.Not.Contain("unused"));
+        Assert.That(source, Does.Not.Contain("<remarks>"));
     }
 
     [Test]

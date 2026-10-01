@@ -460,19 +460,67 @@ public class ProtocolGenerator
         return retList;
     }
 
-    // Instructions without a property have nowhere else to document their comments, so they go on the containing type
+    // Instructions without a property have nowhere else to document their comments, so they go on the containing type.
     private static List<string> GetInstructionNotes(IEnumerable<IProtocolInstruction> instructions)
     {
+        var flattened = FlattenChunked(instructions);
         var notes = new List<string>();
-        foreach (var instruction in instructions)
+        for (var i = 0; i < flattened.Count; i++)
         {
-            if (!instruction.HasProperty && !string.IsNullOrWhiteSpace(instruction.Comment))
-                notes.Add(instruction.Comment);
-
-            if (instruction is ChunkedInstruction)
-                notes.AddRange(GetInstructionNotes(instruction.Instructions));
+            var instruction = flattened[i];
+            if (!instruction.HasProperty && instruction is not FieldInstruction && !string.IsNullOrWhiteSpace(instruction.Comment))
+                notes.Add($"{DescribeInstruction(flattened, i)}: {instruction.Comment.Trim()}");
         }
         return notes;
+    }
+
+    private static List<IProtocolInstruction> FlattenChunked(IEnumerable<IProtocolInstruction> instructions)
+    {
+        var flattened = new List<IProtocolInstruction>();
+        foreach (var instruction in instructions)
+        {
+            flattened.Add(instruction);
+
+            if (instruction is ChunkedInstruction)
+                flattened.AddRange(FlattenChunked(instruction.Instructions));
+        }
+        return flattened;
+    }
+
+    // Each note starts with a description of its instruction, since the note is no longer next to said instruction.
+    // e.g. "The dummy char after <see cref="X"/> (always 0)"
+    private static string DescribeInstruction(IReadOnlyList<IProtocolInstruction> instructions, int index)
+    {
+        var instruction = instructions[index];
+        var subject = instruction switch
+        {
+            DummyInstruction => $"The dummy {instruction.TypeInfo.ProtocolTypeName}",
+            BreakInstruction => "The break byte",
+            ChunkedInstruction => "The chunked section",
+            _ => throw new InvalidOperationException($"Unexpected instruction type {instruction.GetType().Name} without a property"),
+        };
+
+        var position = DescribeInstructionPosition(instructions, index);
+        if (!string.IsNullOrEmpty(position))
+            subject += $" {position}";
+
+        // Dummies are named after their formatted content
+        if (instruction is DummyInstruction && !string.IsNullOrWhiteSpace(instruction.Name))
+            subject += $" (always {instruction.Name})";
+
+        return subject;
+    }
+
+    private static string DescribeInstructionPosition(IReadOnlyList<IProtocolInstruction> instructions, int index)
+    {
+        static bool IsPublicMember(IProtocolInstruction instruction) => instruction.HasProperty && instruction is not LengthInstruction;
+
+        var previous = instructions.Take(index).LastOrDefault(IsPublicMember);
+        if (previous != null)
+            return $"after <see cref=\"{previous.Name}\"/>";
+
+        var next = instructions.Skip(index + 1).FirstOrDefault(IsPublicMember);
+        return next != null ? $"before <see cref=\"{next.Name}\"/>" : string.Empty;
     }
 
     private static void ApplyChunked(IReadOnlyList<object> instructions, bool isChunked = false)
