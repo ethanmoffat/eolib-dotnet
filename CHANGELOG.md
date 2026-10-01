@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-30
+
 ### Added
 - Named hardcoded fields now generate a `Default{Name}` constant with the spec value, e.g.
   `InitInitClientPacket.DefaultProtocolVersion`.
@@ -142,7 +144,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.3.0
 [1.2.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.2.0
 [1.1.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.1.0
 [1.0.2]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.0.2
