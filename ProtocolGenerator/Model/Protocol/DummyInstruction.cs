@@ -11,6 +11,7 @@ public class DummyInstruction : BaseInstruction
     {
         TypeInfo = new TypeInfo(typeMapper, xmlDummyInstruction.Type);
         Name = NameOrContent(string.Empty, xmlDummyInstruction.Content);
+        Comment = xmlDummyInstruction.Comment;
     }
 
     public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)

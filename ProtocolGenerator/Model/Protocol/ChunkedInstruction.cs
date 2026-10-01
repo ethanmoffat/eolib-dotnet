@@ -9,6 +9,7 @@ public class ChunkedInstruction : BaseInstruction
     public ChunkedInstruction(Xml.ProtocolChunkedInstruction xmlChunkedInstruction, TypeMapper typeMapper)
     {
         Instructions = xmlChunkedInstruction.Instructions.Select(x => ProtocolInstructionFactory.Transform(typeMapper, x)).ToList();
+        Comment = xmlChunkedInstruction.Comment;
     }
 
     public override List<Xml.ProtocolStruct> GetNestedTypes()

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using ProtocolGenerator.Extensions;
 using ProtocolGenerator.Model.Xml;
 using ProtocolGenerator.Types;
 
@@ -59,11 +61,11 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
         var parsedFiles = new List<(string Path, ProtocolSpec Spec)>();
         foreach (var file in filesFiltered)
         {
-            var sourceTextString = file.Text.ToString();
-            using var ms = new MemoryStream(file.Text.Encoding.GetBytes(sourceTextString));
+            var document = XDocument.Parse(file.Text.ToString(), LoadOptions.PreserveWhitespace);
+            document.Root.RewriteCommentsAsElementsInPlace();
 
             var serializer = new XmlSerializer(typeof(ProtocolSpec));
-            var model = (ProtocolSpec)serializer.Deserialize(ms);
+            var model = (ProtocolSpec)serializer.Deserialize(document.CreateReader());
 
             foreach (var e in model.Enums)
             {

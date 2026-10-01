@@ -16,6 +16,28 @@ public class SwitchInstruction : BaseInstruction
         TypeInfo = new TypeInfo(typeMapper, GetSwitchInterfaceType(_xmlSwitchInstruction.Field), isInterface: true);
         Name = GetSwitchInterfaceMemberName(_xmlSwitchInstruction.Field);
         _fieldName = IdentifierConverter.SnakeCaseToPascalCase(_xmlSwitchInstruction.Field);
+        Comment = GetComment();
+    }
+
+    private string GetComment()
+    {
+        // Empty cases don't generate a type, so their comments document the switch property instead
+        var emptyCaseComments = _xmlSwitchInstruction.Cases
+            .Where(x => x.Instructions.Count == 0 && !string.IsNullOrWhiteSpace(x.Comment))
+            .GroupBy(x => x.Comment)
+            .Select(x => $"When {_fieldName} is {JoinCaseValues(x.Select(c => c.Default ? "any other value" : c.Value).ToList())}: {x.Key}");
+
+        var lines = new[] { _xmlSwitchInstruction.Comment }
+            .Concat(emptyCaseComments)
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+        return string.Join("\n", lines);
+    }
+
+    private static string JoinCaseValues(IReadOnlyList<string> values)
+    {
+        return values.Count == 1
+            ? values[0]
+            : $"{string.Join(", ", values.Take(values.Count - 1))} or {values[values.Count - 1]}";
     }
 
     public override List<Xml.ProtocolStruct> GetNestedTypes()

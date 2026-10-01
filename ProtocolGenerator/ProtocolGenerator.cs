@@ -101,7 +101,9 @@ public class ProtocolGenerator
             AssociateLengths(inputType.Instructions);
         }
 
-        state.Comment(inputType.Comment);
+        var instructions = inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(_typeMapper, x)).ToList();
+
+        state.Comment(inputType.Comment, GetInstructionNotes(instructions));
         state.Attribute("Generated");
 
         state.TypeDeclaration(
@@ -113,11 +115,7 @@ public class ProtocolGenerator
         state.BeginBlock();
         if (!inputType.IsInterface)
         {
-            GenerateStructureImplementation(
-                state,
-                inputType.Name,
-            inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(_typeMapper, x)).ToList()
-            );
+            GenerateStructureImplementation(state, inputType.Name, instructions);
         }
         state.EndBlock();
     }
@@ -127,7 +125,9 @@ public class ProtocolGenerator
         ApplyChunked(inputType.Instructions);
         AssociateLengths(inputType.Instructions);
 
-        state.Comment(inputType.Comment);
+        var instructions = inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(_typeMapper, x)).ToList();
+
+        state.Comment(inputType.Comment, GetInstructionNotes(instructions));
         state.Attribute("Generated");
 
         var clientOrServer = HintName.Contains("Client")
@@ -153,11 +153,7 @@ public class ProtocolGenerator
             $"PacketAction.{inputType.Action}"
         );
         state.NewLine();
-        GenerateStructureImplementation(
-            state,
-            typeName,
-            inputType.Instructions.Select(x => ProtocolInstructionFactory.Transform(_typeMapper, x)).ToList()
-        );
+        GenerateStructureImplementation(state, typeName, instructions);
         state.EndBlock();
     }
 
@@ -462,6 +458,21 @@ public class ProtocolGenerator
             }
         }
         return retList;
+    }
+
+    // Instructions without a property have nowhere else to document their comments, so they go on the containing type
+    private static List<string> GetInstructionNotes(IEnumerable<IProtocolInstruction> instructions)
+    {
+        var notes = new List<string>();
+        foreach (var instruction in instructions)
+        {
+            if (!instruction.HasProperty && !string.IsNullOrWhiteSpace(instruction.Comment))
+                notes.Add(instruction.Comment);
+
+            if (instruction is ChunkedInstruction)
+                notes.AddRange(GetInstructionNotes(instruction.Instructions));
+        }
+        return notes;
     }
 
     private static void ApplyChunked(IReadOnlyList<object> instructions, bool isChunked = false)

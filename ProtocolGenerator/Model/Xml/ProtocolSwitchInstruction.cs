@@ -8,6 +8,9 @@ public sealed class ProtocolSwitchInstruction : ProtocolBaseInstruction
     [XmlAttribute("field")]
     public string Field { get; set; }
 
+    [XmlElement("comment")]
+    public string Comment { get; set; }
+
     [XmlElement("case")]
     public List<ProtocolCase> Cases { get; set; }
 }

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Named hardcoded fields now generate a `Default{Name}` constant with the spec value, e.g.
+  `InitInitClientPacket.DefaultProtocolVersion`.
+- XML comments in the protocol files are now generated as doc comments. Comments on unnamed fields, dummies and other
+  instructions without a property are added to the `<remarks>` of the containing type, and comments in empty switch
+  cases are added to the switch data property.
+
+### Changed
+- Named hardcoded fields now store the value that was deserialized instead of discarding it, and have a private setter.
+  New objects still serialize the default value.
+
+### Updated
+- Pulled in changes for eo-protocol, with impact to generated code:
+    - [Name hardcoded client fields verified by the official server](https://github.com/cirras/eo-protocol/commit/8ccc442c1ea448b68caa5dbf561873d226def184)
+- Pulled in changes for eo-captured-packets for test parity with protocol changes.
+
 ## [1.2.0] - 2026-09-28
 
 ### Added

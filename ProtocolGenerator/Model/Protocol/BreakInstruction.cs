@@ -10,6 +10,7 @@ public class BreakInstruction : BaseInstruction
     public BreakInstruction(Xml.ProtocolBreakInstruction protocolBreakInstruction)
     {
         _isChunked = protocolBreakInstruction.IsChunked;
+        Comment = protocolBreakInstruction.Comment;
     }
 
     public override void GenerateSerialize(GeneratorState state, IReadOnlyList<IProtocolInstruction> outerInstructions)

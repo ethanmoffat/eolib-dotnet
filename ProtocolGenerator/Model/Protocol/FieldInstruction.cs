@@ -11,6 +11,8 @@ public class FieldInstruction : BaseInstruction
 
     protected override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
 
+    protected override bool StoreDeserializedValue => HasProperty;
+
     public FieldInstruction(Xml.ProtocolFieldInstruction xmlFieldInstruction, TypeMapper typeMapper)
     {
         _xmlFieldInstruction = xmlFieldInstruction;
@@ -37,6 +39,16 @@ public class FieldInstruction : BaseInstruction
 
     protected override void GenerateProperty(GeneratorState state, string defaultValue)
     {
+        if (IsReadOnly)
+        {
+            var constantName = $"Default{Name}";
+            state.Comment(string.IsNullOrWhiteSpace(Comment) ? $"The default value of the `{_xmlFieldInstruction.Name}` field." : Comment);
+            state.Constant(GeneratorState.Visibility.Public, TypeInfo.PropertyType, constantName, FormatContent(_xmlFieldInstruction.Content));
+            state.NewLine();
+            base.GenerateProperty(state, constantName);
+            return;
+        }
+
         base.GenerateProperty(state, FormatContent(_xmlFieldInstruction.Content));
     }
 }

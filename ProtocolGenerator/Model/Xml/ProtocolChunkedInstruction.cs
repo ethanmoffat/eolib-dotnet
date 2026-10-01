@@ -13,4 +13,7 @@ public sealed class ProtocolChunkedInstruction : ProtocolBaseInstruction
     [XmlElement("chunked", typeof(ProtocolChunkedInstruction))]
     [XmlElement("break", typeof(ProtocolBreakInstruction))]
     public List<object> Instructions { get; set; }
+
+    [XmlElement("comment")]
+    public string Comment { get; set; }
 }

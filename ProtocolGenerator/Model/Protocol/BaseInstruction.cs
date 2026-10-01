@@ -24,6 +24,8 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     protected virtual bool DeserializeToLocal => false;
 
+    protected virtual bool StoreDeserializedValue => HasProperty && !IsReadOnly;
+
     public List<IProtocolInstruction> Instructions { get; protected set; } = new();
 
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
@@ -161,7 +163,7 @@ public abstract class BaseInstruction : IProtocolInstruction
 
             // Deserialize to "Name", with extras:
             // - If DeserializeToLocal, this is a <length> element for an array or string: *just* for deserialize, we store the result in a local var (length is implicitly mapped to another property's size for serialize)
-            // - If ReadOnly, don't assign to Name; just deserialize the expected number of bytes
+            // - If StoreDeserializedValue is false (e.g. ReadOnly), don't assign to Name; just deserialize the expected number of bytes
             // - If the field is an array, it requires an index into the array for the single element
             // - If the field is an enum, the result of the read requires a cast from int
             // - If the field is a boolean, it requires a conversion to bool; zero for false and nonzero for true
@@ -169,13 +171,13 @@ public abstract class BaseInstruction : IProtocolInstruction
             // - If the field doesn't have an associated property, ignore the value
             var preDeserialize = DeserializeToLocal
                 ? $"var {Name} = "
-                : HasProperty && !IsReadOnly
+                : StoreDeserializedValue
                     ? string.Format($"{Name}{{0}} = {{1}}",
                         $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
                         $"{(TypeInfo.IsEnum ? $"({TypeInfo.PropertyType})" : string.Empty)}")
                     : string.Empty;
 
-            var postDeserialize = HasProperty && (!IsReadOnly || DeserializeToLocal)
+            var postDeserialize = StoreDeserializedValue || (HasProperty && DeserializeToLocal)
                 ? string.Format("{0}{1}",
                     $"{(TypeInfo.EoType.HasFlag(EoType.Bool) ? " != 0" : string.Empty)}",
                     $"{(Offset != 0 ? $" + {Offset}" : string.Empty)}")
@@ -244,6 +246,11 @@ public abstract class BaseInstruction : IProtocolInstruction
         {
             state.Text(" ", indented: false);
             state.AutoSet(GeneratorState.Visibility.None, newLine: false, indented: false);
+        }
+        else if (StoreDeserializedValue)
+        {
+            state.Text(" ", indented: false);
+            state.AutoSet(GeneratorState.Visibility.Private, newLine: false, indented: false);
         }
         state.Text(" ", indented: false);
         state.EndBlock(newLine: false, indented: false);

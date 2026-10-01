@@ -43,6 +43,28 @@ public class GeneratorState
         AppendIndentedLine("/// </summary>");
     }
 
+    public void Comment(string summary, IReadOnlyList<string> remarks)
+    {
+        Comment(summary);
+
+        if (remarks.Count == 0)
+        {
+            return;
+        }
+
+        AppendIndentedLine("/// <remarks>");
+        foreach (var remark in remarks)
+        {
+            AppendIndentedLine("/// <para>");
+            foreach (var line in remark.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                AppendIndentedLine($"/// {line.Trim()}");
+            }
+            AppendIndentedLine("/// </para>");
+        }
+        AppendIndentedLine("/// </remarks>");
+    }
+
     public void Attribute(string attributeName)
     {
         AppendIndentedLine($"[{attributeName}]");
@@ -135,6 +157,11 @@ public class GeneratorState
             AppendIndentedLine($"{vis} {type} {name} => {impl};");
         else
             AppendIndentedLine($"{type} {name} => {impl};");
+    }
+
+    public void Constant(Visibility visibility, string type, string name, string value)
+    {
+        AppendIndentedLine($"{String(visibility)} const {type} {name} = {value};");
     }
 
     public void AutoGet(Visibility visibility, bool newLine = true, bool indented = true)
