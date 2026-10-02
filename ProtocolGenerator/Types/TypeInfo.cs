@@ -186,7 +186,8 @@ public class TypeInfo
             _ => inputType,
         };
 
-        if (optional && ret != "byte[]" && !isStruct)
+        // Generated code has no nullable annotation context, so only value types get '?'
+        if (optional && ret != "byte[]" && ret != "string" && !isStruct)
             ret += "?";
         else if (isArray)
             ret = $"List<{ret}>";

@@ -49,6 +49,6 @@ public class FieldInstruction : BaseInstruction
             return;
         }
 
-        base.GenerateProperty(state, FormatContent(_xmlFieldInstruction.Content));
+        base.GenerateProperty(state, TypeInfo.Optional ? string.Empty : FormatContent(_xmlFieldInstruction.Content));
     }
 }

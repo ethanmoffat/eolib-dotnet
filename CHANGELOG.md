@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Remarks generated from comments on dummies and other instructions without a property now start with a description of the instruction, e.g. "The dummy byte (always 255): …", so they make sense on the containing type.
 
+### Fixed
+- Optional `string` fields now generate code that compiles. They are `null` by default and are only serialized when set.
+- Whitespace around child elements of a `<field>`, such as a `<comment>`, is no longer used as the field's default value.
+
 ### Removed
 - Comments on unnamed hardcoded fields are no longer added to the remarks of the containing type, since those values aren't visible to consumers.
 

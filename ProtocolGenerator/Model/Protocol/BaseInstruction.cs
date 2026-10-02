@@ -28,6 +28,9 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     public List<IProtocolInstruction> Instructions { get; protected set; } = new();
 
+    // Optional structs and strings are reference types; other optional types are Nullable<T>
+    private bool IsReferenceType => (!TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct)) || TypeInfo.EoType.HasFlag(EoType.String);
+
     public virtual List<ProtocolStruct> GetNestedTypes() => new();
 
     public virtual void GenerateProperty(GeneratorState state)
@@ -42,8 +45,7 @@ public abstract class BaseInstruction : IProtocolInstruction
     {
         if (TypeInfo.Optional)
         {
-            var isStruct = !TypeInfo.IsEnum && TypeInfo.EoType.HasFlag(EoType.Struct);
-            state.Text($"if ({Name}{(isStruct ? " != null" : ".HasValue")})", indented: true);
+            state.Text($"if ({Name}{(IsReferenceType ? " != null" : ".HasValue")})", indented: true);
             state.NewLine();
             state.BeginBlock();
         }
@@ -61,13 +63,13 @@ public abstract class BaseInstruction : IProtocolInstruction
             {
                 // Serialize "Name", with extras:
                 // - If the field is an enum, it requires a cast to (int) prior to the call to Serialize
-                // - If the field is Optional, it is Nullable and requires a call to .Value
+                // - If the field is Optional and not a reference type, it is Nullable and requires a call to .Value
                 // - If the field is an array, it requires an index into the array for the single element
                 // - If the field is a boolean, it requires a conversion to int; 1 for true and 0 for false
                 // - If the field has an offset, it requires adjustment based on the provided offset value
                 string.Format($"{{0}}{Name}{{1}}{{2}}{{3}}{{4}}",
                     $"{(TypeInfo.IsEnum ? "(int)" : string.Empty)}",
-                    $"{(TypeInfo.Optional ? ".Value" : string.Empty)}",
+                    $"{(TypeInfo.Optional && !IsReferenceType ? ".Value" : string.Empty)}",
                     $"{(TypeInfo.IsArray ? "[ndx]" : string.Empty)}",
                     $"{(TypeInfo.EoType.HasFlag(EoType.Bool) ? " ? 1 : 0" : string.Empty)}",
                     $"{(Offset != 0 ? $" + {-Offset}" : string.Empty)}"
@@ -229,6 +231,10 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     protected string FormatContent(string instructionContent)
     {
+        // Whitespace around child elements (such as <comment>) is not a hardcoded value
+        if (string.IsNullOrWhiteSpace(instructionContent))
+            instructionContent = string.Empty;
+
         return TypeInfo.EoType.HasFlag(EoType.String)
             ? $"\"{instructionContent}\""
             : instructionContent;
