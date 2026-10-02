@@ -69,7 +69,7 @@ public class ProtocolIncrementalGenerator : IIncrementalGenerator
 
             foreach (var e in model.Enums)
             {
-                if (!typeMapper.RegisterEnum(e.Name, e.Type))
+                if (!typeMapper.RegisterEnum(e))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(ddDuplicateTypeWarning, Location.None, e.Name));
                 }

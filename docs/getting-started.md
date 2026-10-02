@@ -34,7 +34,7 @@ Generated types implement `ISerializable`, which provides `Serialize(EoWriter)`,
 | enum | `enum`. Unrecognized values are preserved. |
 | array | `List<T>` |
 | optional field | Nullable type (`int?`, `string?`, ...) |
-| switch | An interface named `I<Field>Data`, implemented by a nested class for each case |
+| switch | An interface named `I<Field>Data`, implemented by a nested class for each case, and `For...` factory methods on the containing type |
 
 ## Packets
 
@@ -75,22 +75,46 @@ if (packet is WalkPlayerClientPacket received)
 }
 ```
 
-Switch fields are properties named `<Field>Data`. Set a case class that matches the switch field:
+Switch fields are properties named `<Field>Data`, which hold the case class that matches the switch field. Types with a switch have static factory methods that set the switch field and its data together:
 
 ```csharp
 using Moffat.EndlessOnline.SDK.Protocol.Net.Server;
 
-var init = new InitInitServerPacket
-{
-    ReplyCode = InitReply.Ok,
-    ReplyCodeData = new InitInitServerPacket.ReplyCodeDataOk { PlayerId = 1 },
-};
+var init = InitInitServerPacket.ForOk(new InitInitServerPacket.ReplyCodeDataOk { PlayerId = 1 });
 
-if (init.ReplyCodeData is InitInitServerPacket.ReplyCodeDataOk ok)
+// Cases without data to set, and enum values without a case, take no parameters
+var wrongUser = LoginReplyServerPacket.ForWrongUser();
+
+// Nested switches are flattened: this sets ReplyCode to Banned and BanType to Permanent
+var banned = InitInitServerPacket.ForBannedPermanent();
+
+// Default cases take the value of the switch field, which must not have its own case
+int sessionId = 1234;
+var created = AccountReplyServerPacket.ForReplyCodeDefault(
+    (AccountReply)sessionId,
+    new AccountReplyServerPacket.ReplyCodeDataDefault { SequenceStart = 5 });
+```
+
+| Case | Factory |
+|---|---|
+| Enum value whose case has data | `For<Value>(data)`, e.g. `LoginReplyServerPacket.ForOk(data)` |
+| Enum value with an empty case, a case with only hardcoded data, or no case | `For<Value>()`, e.g. `LoginReplyServerPacket.ForWrongUser()` |
+| Enum value whose case has a nested switch | `For<Value><InnerValue>`, e.g. `InitInitServerPacket.ForBannedTemporary(data)` |
+| Numeric case with data | `For<CaseClass>(data)`, e.g. `InitInitServerPacket.ForBanTypeData0(data)` |
+| Default case | `For<Field>Default(code, data)`, e.g. `AccountReplyServerPacket.ForReplyCodeDefault(code, data)` |
+
+Numeric cases without data don't have a factory. Factories throw `ArgumentNullException` for `null` data, and default case factories throw `ArgumentException` for a value that has its own case. The properties can still be set directly, as long as the case class matches the switch field.
+
+To read a switch, check the type of the data with pattern matching:
+
+```csharp
+if (packet.ReplyCodeData is LoginReplyServerPacket.ReplyCodeDataOk ok)
 {
-    // use ok.PlayerId
+    // use ok.Characters
 }
 ```
+
+There's no need to check the switch field as well: deserializing always sets the case class that matches the switch field, and serializing throws `InvalidOperationException` when the data isn't the case class for the switch field.
 
 ## Pub and map files
 

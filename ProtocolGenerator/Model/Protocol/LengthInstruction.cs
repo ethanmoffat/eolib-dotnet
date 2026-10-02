@@ -8,7 +8,7 @@ public class LengthInstruction : BaseInstruction
 
     public override bool HasProperty => !string.IsNullOrWhiteSpace(_xmlLengthInstruction.Name);
 
-    protected override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlLengthInstruction.LengthFor);
+    public override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlLengthInstruction.LengthFor);
 
     protected override bool DeserializeToLocal => IsReadOnly;
 

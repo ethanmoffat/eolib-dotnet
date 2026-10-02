@@ -65,6 +65,12 @@ public class GeneratorState
         AppendIndentedLine("/// </remarks>");
     }
 
+    public void CommentTag(string tag, string text, string attributes = "")
+    {
+        var openTag = string.IsNullOrWhiteSpace(attributes) ? tag : $"{tag} {attributes}";
+        AppendIndentedLine($"/// <{openTag}>{text}</{tag}>");
+    }
+
     public void Attribute(string attributeName)
     {
         AppendIndentedLine($"[{attributeName}]");
@@ -254,7 +260,7 @@ public class GeneratorState
         for (int i = 0; i < parameterNamesAndTypes.Count; i++)
         {
             if (i != 0)
-                sb.Append(",");
+                sb.Append(", ");
 
             var p = parameterNamesAndTypes[i];
             sb.Append($"{p.Item1} {p.Item2}");

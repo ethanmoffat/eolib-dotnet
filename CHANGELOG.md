@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Types with a switch now have static factory methods that set the switch field and its case data together, e.g. `LoginReplyServerPacket.ForOk(data)`, `LoginReplyServerPacket.ForWrongUser()` and `AccountReplyServerPacket.ForReplyCodeDefault(code, data)`. Nested switches are flattened onto the containing type, e.g. `InitInitServerPacket.ForBannedTemporary(data)`. See the getting started guide for the naming rules.
+
 ### Changed
 - Remarks generated from comments on dummies and other instructions without a property now start with a description of the instruction, e.g. "The dummy byte (always 255): …", so they make sense on the containing type.
 

@@ -9,7 +9,7 @@ public class FieldInstruction : BaseInstruction
 
     public override bool HasProperty => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Name);
 
-    protected override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
+    public override bool IsReadOnly => !string.IsNullOrWhiteSpace(_xmlFieldInstruction.Content);
 
     protected override bool StoreDeserializedValue => HasProperty;
 

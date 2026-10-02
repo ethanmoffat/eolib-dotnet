@@ -101,6 +101,11 @@ public class ProtocolValidator
         if (string.IsNullOrWhiteSpace(psi.Field) || !state.HasField(psi.Field))
             throw new InvalidOperationException($"Switch must reference a preceding field ({psi.Field}).");
 
+        // Switch factories set one switch per scope
+        if (state.SwitchField != null)
+            throw new InvalidOperationException($"Switch factories don't support multiple switches in one scope (switches on {state.SwitchField} and {psi.Field}).");
+        state.SwitchField = psi.Field;
+
         var cases = psi.Cases ?? new List<ProtocolCase>();
         var values = new HashSet<string>();
         var merged = state.Clone();
@@ -197,6 +202,9 @@ public class ProtocolValidator
         public bool ReachedDummy { get; set; }
 
         public bool ReachedUnsizedArray { get; set; }
+
+        // Not cloned or copied: each case body is a new scope
+        public string SwitchField { get; set; }
 
         public void AddField(string name)
         {

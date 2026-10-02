@@ -20,7 +20,7 @@ public abstract class BaseInstruction : IProtocolInstruction
 
     public virtual bool HasProperty => !string.IsNullOrWhiteSpace(Name);
 
-    protected virtual bool IsReadOnly => false;
+    public virtual bool IsReadOnly => false;
 
     protected virtual bool DeserializeToLocal => false;
 

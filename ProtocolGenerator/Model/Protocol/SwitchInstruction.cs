@@ -87,10 +87,7 @@ public class SwitchInstruction : BaseInstruction
             }
             else
             {
-                if (int.TryParse(c.Value, out var _))
-                    state.Case($"({typeNameForSwitchedField}){c.Value}");
-                else
-                    state.Case($"{typeNameForSwitchedField}.{c.Value}");
+                state.Case(GetCaseValueExpression(typeNameForSwitchedField, c.Value));
             }
 
             state.IncreaseIndent();
@@ -131,10 +128,7 @@ public class SwitchInstruction : BaseInstruction
             }
             else
             {
-                if (int.TryParse(c.Value, out var _))
-                    state.Case($"({typeNameForSwitchedField}){c.Value}");
-                else
-                    state.Case($"{typeNameForSwitchedField}.{c.Value}");
+                state.Case(GetCaseValueExpression(typeNameForSwitchedField, c.Value));
             }
 
             state.IncreaseIndent();
@@ -163,13 +157,20 @@ public class SwitchInstruction : BaseInstruction
         return $"I{converted}Data";
     }
 
-    private static string GetSwitchInterfaceMemberName(string fieldName)
+    internal static string GetSwitchInterfaceMemberName(string fieldName)
     {
         var converted = IdentifierConverter.SnakeCaseToPascalCase(fieldName);
         return $"{converted}Data";
     }
 
-    private static string GetSwitchCaseName(string switchField, string caseValue, bool isDefault)
+    internal static string GetCaseValueExpression(string typeName, string caseValue)
+    {
+        return int.TryParse(caseValue, out _)
+            ? $"({typeName}){caseValue}"
+            : $"{typeName}.{caseValue}";
+    }
+
+    internal static string GetSwitchCaseName(string switchField, string caseValue, bool isDefault)
     {
         return $"{GetSwitchInterfaceMemberName(switchField)}{(isDefault ? "Default" : caseValue)}";
     }

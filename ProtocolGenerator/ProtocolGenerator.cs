@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.Text;
+using ProtocolGenerator.Extensions;
 using ProtocolGenerator.Model.Protocol;
 using ProtocolGenerator.Model.Xml;
 using ProtocolGenerator.Types;
@@ -115,7 +116,11 @@ public class ProtocolGenerator
         state.BeginBlock();
         if (!inputType.IsInterface)
         {
-            GenerateStructureImplementation(state, inputType.Name, instructions);
+            // Switch case types don't get factories: the factories of the containing type set their data
+            var factories = string.IsNullOrWhiteSpace(inputType.BaseType)
+                ? SwitchFactoryBuilder.Build(inputType.Instructions, _typeMapper)
+                : new List<SwitchFactory>();
+            GenerateStructureImplementation(state, inputType.Name, instructions, factories);
         }
         state.EndBlock();
     }
@@ -153,11 +158,11 @@ public class ProtocolGenerator
             $"PacketAction.{inputType.Action}"
         );
         state.NewLine();
-        GenerateStructureImplementation(state, typeName, instructions);
+        GenerateStructureImplementation(state, typeName, instructions, SwitchFactoryBuilder.Build(inputType.Instructions, _typeMapper));
         state.EndBlock();
     }
 
-    private void GenerateStructureImplementation(GeneratorState state, string typeName, List<IProtocolInstruction> instructions)
+    private void GenerateStructureImplementation(GeneratorState state, string typeName, List<IProtocolInstruction> instructions, IReadOnlyList<SwitchFactory> factories)
     {
         // Generate nested types. Each switch case is represented by a nested structure with data relevant to the switch case.
         // The switch case as a member is represented by an interface, with each "case" being a different implementation of that interface.
@@ -197,6 +202,12 @@ public class ProtocolGenerator
             }
         }
 
+        foreach (var factory in factories)
+        {
+            GenerateSwitchFactory(state, typeName, factory);
+            state.NewLine();
+        }
+
         var flattenedInstructions = Flatten(instructions);
         flattenedInstructions.Insert(0, new FieldInstruction(new ProtocolFieldInstruction { Name = "ByteSize", Type = "int" }, _typeMapper));
 
@@ -213,6 +224,123 @@ public class ProtocolGenerator
         state.NewLine();
 
         GenerateGetHashCode(state, typeName, flattenedInstructions);
+    }
+
+    private static void GenerateSwitchFactory(GeneratorState state, string typeName, SwitchFactory factory)
+    {
+        var leaf = factory.Leaf;
+
+        GenerateSwitchFactoryComment(state, typeName, factory);
+
+        var parameters = new List<(string, string)>();
+        if (factory.IsDefault)
+            parameters.Add((factory.DefaultCodeType, "code"));
+        if (leaf.DataIsParameter)
+            parameters.Add((leaf.DataTypeName, "data"));
+
+        state.MethodDeclaration(GeneratorState.Visibility.Public, $"static {typeName}", factory.Name, parameters);
+        state.BeginBlock();
+
+        if (factory.IsDefault && factory.ExcludedCodes.Count > 0)
+        {
+            state.Text($"if (code == {factory.ExcludedCodes[0]}", indented: true);
+            state.IncreaseIndent();
+            foreach (var excluded in factory.ExcludedCodes.Skip(1))
+            {
+                state.NewLine();
+                state.Text($"|| code == {excluded}", indented: true);
+            }
+            state.Text(")", indented: false);
+            state.NewLine();
+            state.DecreaseIndent();
+            state.BeginBlock();
+            state.Text($"throw new ArgumentException($\"Expected code to be a value without its own case, but was {{code}}\", nameof(code));", indented: true);
+            state.NewLine();
+            state.EndBlock();
+            state.NewLine();
+        }
+
+        if (leaf.DataIsParameter)
+        {
+            state.Text("if (data == null)", indented: true);
+            state.NewLine();
+            state.BeginBlock();
+            state.Text("throw new ArgumentNullException(nameof(data));", indented: true);
+            state.NewLine();
+            state.EndBlock();
+            state.NewLine();
+        }
+
+        state.Return($"new {typeName}", endStatement: false);
+        state.NewLine();
+        for (var i = 0; i < factory.Steps.Count; i++)
+        {
+            var step = factory.Steps[i];
+            var isLeaf = i == factory.Steps.Count - 1;
+
+            state.BeginBlock();
+            state.Text($"{step.FieldName} = {(factory.IsDefault ? "code" : step.CodeExpression)},", indented: true);
+            state.NewLine();
+
+            if (!isLeaf)
+            {
+                state.Text($"{step.DataPropertyName} = new {step.DataTypeName}", indented: true);
+                state.NewLine();
+                continue;
+            }
+
+            if (step.DataIsParameter)
+            {
+                state.Text($"{step.DataPropertyName} = data,", indented: true);
+                state.NewLine();
+            }
+            else if (!string.IsNullOrEmpty(step.DataTypeName))
+            {
+                state.Text($"{step.DataPropertyName} = new {step.DataTypeName}(),", indented: true);
+                state.NewLine();
+            }
+        }
+
+        for (var i = factory.Steps.Count - 1; i >= 0; i--)
+        {
+            state.EndBlock(newLine: false);
+            state.Text(i == 0 ? ";" : ",", indented: false);
+            state.NewLine();
+        }
+
+        state.EndBlock();
+    }
+
+    private static void GenerateSwitchFactoryComment(GeneratorState state, string typeName, SwitchFactory factory)
+    {
+        var leaf = factory.Leaf;
+
+        var assignments = factory.Steps
+            .Select(x => $"<see cref=\"{x.QualifiedFieldName}\"/> set to {x.CodeDocumentation}")
+            .ToList();
+
+        if (leaf.DataIsParameter)
+            assignments.Add($"<see cref=\"{leaf.QualifiedDataPropertyName}\"/> set to <paramref name=\"data\"/>");
+        else if (!string.IsNullOrEmpty(leaf.DataTypeName))
+            assignments.Add($"<see cref=\"{leaf.QualifiedDataPropertyName}\"/> set to a new <see cref=\"{leaf.DataTypeName}\"/>");
+
+        var joinedAssignments = assignments.Count == 1
+            ? assignments[0]
+            : $"{string.Join(", ", assignments.Take(assignments.Count - 1))} and {assignments[assignments.Count - 1]}";
+
+        state.Comment($"Creates a new <see cref=\"{typeName}\"/> with {joinedAssignments}.");
+
+        if (factory.IsDefault)
+            state.CommentTag("param", $"The value of <see cref=\"{leaf.QualifiedFieldName}\"/>. Must not be a value that has its own case.", "name=\"code\"");
+        if (leaf.DataIsParameter)
+            state.CommentTag("param", "The data for the case.", "name=\"data\"");
+
+        state.CommentTag("returns", $"The new <see cref=\"{typeName}\"/>.");
+
+        if (factory.IsDefault && factory.ExcludedCodes.Count > 0)
+            state.CommentTag("exception", "Thrown when <paramref name=\"code\"/> is a value that has its own case.", "cref=\"ArgumentException\"");
+        if (leaf.DataIsParameter)
+            state.CommentTag("exception", "Thrown when <paramref name=\"data\"/> is null.", "cref=\"ArgumentNullException\"");
     }
 
     private static void GenerateSerialize(GeneratorState state, List<IProtocolInstruction> instructions, IReadOnlyList<IProtocolInstruction> flattenedInstructions)
@@ -443,23 +571,6 @@ public class ProtocolGenerator
         return retList;
     }
 
-    private static List<object> Flatten(IReadOnlyList<object> instructions)
-    {
-        var retList = new List<object>();
-        foreach (var inst in instructions)
-        {
-            if (inst is ProtocolChunkedInstruction pci)
-            {
-                retList.AddRange(Flatten(pci.Instructions));
-            }
-            else
-            {
-                retList.Add(inst);
-            }
-        }
-        return retList;
-    }
-
     // Instructions without a property have nowhere else to document their comments, so they go on the containing type.
     private static List<string> GetInstructionNotes(IEnumerable<IProtocolInstruction> instructions)
     {
@@ -551,7 +662,7 @@ public class ProtocolGenerator
 
     private static void AssociateLengths(IReadOnlyList<object> instructions)
     {
-        var flattened = Flatten(instructions);
+        var flattened = instructions.FlattenChunked();
         var lengths = flattened.OfType<ProtocolLengthInstruction>().ToList();
 
         foreach (var inst in flattened)

@@ -13,6 +13,8 @@ public interface IProtocolInstruction
 
     bool HasProperty { get; }
 
+    bool IsReadOnly { get; }
+
     List<IProtocolInstruction> Instructions { get; }
 
     List<Xml.ProtocolStruct> GetNestedTypes();
