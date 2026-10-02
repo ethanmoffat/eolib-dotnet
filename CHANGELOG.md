@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-02
+
 ### Added
 - Types with a switch now have static factory methods that set the switch field and its case data together, e.g. `LoginReplyServerPacket.ForOk(data)`, `LoginReplyServerPacket.ForWrongUser()` and `AccountReplyServerPacket.ForReplyCodeDefault(code, data)`. Nested switches are flattened onto the containing type, e.g. `InitInitServerPacket.ForBannedTemporary(data)`. See the getting started guide for the naming rules.
 
@@ -157,7 +159,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Data encryption
     - Packet sequencing
 
-[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/ethanmoffat/eolib-dotnet/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.4.0
 [1.3.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.3.0
 [1.2.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.2.0
 [1.1.0]: https://github.com/ethanmoffat/eolib-dotnet/releases/tag/v1.1.0
